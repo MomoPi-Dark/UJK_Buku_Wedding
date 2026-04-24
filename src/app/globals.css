@@ -1,0 +1,111 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: false;
+}
+@plugin "daisyui/theme" {
+  name: "man2";
+  default: true;
+  color-scheme: light;
+
+  --color-base-100: #fffaf6;
+  --color-base-200: #fdf1eb;
+  --color-base-300: #f6dfd3;
+  --color-base-content: #4b3740;
+  --color-primary: #b76e79;
+  --color-primary-content: #fff8fa;
+  --color-secondary: #d8a7b8;
+  --color-secondary-content: #fff8fc;
+  --color-accent: #d4b483;
+  --color-accent-content: #2b1a04;
+  --color-neutral: #5a3f49;
+  --color-neutral-content: #fff6f9;
+  --color-info: #8f7cc4;
+  --color-info-content: #f7f4ff;
+  --color-success: #76936a;
+  --color-success-content: #f4fff0;
+  --color-warning: #d4b483;
+  --color-warning-content: #2b1a04;
+  --color-error: #bb4b67;
+  --color-error-content: #fff6f8;
+
+  --radius-selector: 0.75rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+:root {
+  --background: #fffaf6;
+  --foreground: #4b3740;
+  --color-brand-deep: #8f4f5d;
+  --color-brand-main: #b76e79;
+  --color-brand-soft: #d8a7b8;
+  --color-shell: #fffaf6;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-plus-jakarta);
+  --font-heading: var(--font-cormorant-garamond);
+}
+
+body {
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-plus-jakarta), sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-space-grotesk), sans-serif;
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(183, 110, 121, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(183, 110, 121, 0.1) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.bg-orbit {
+  background:
+    radial-gradient(
+      circle at 8% 8%,
+      rgba(183, 110, 121, 0.24),
+      transparent 36%
+    ),
+    radial-gradient(
+      circle at 92% 0%,
+      rgba(216, 167, 184, 0.2),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 50% 100%,
+      rgba(212, 180, 131, 0.18),
+      transparent 34%
+    );
+}
+
+.glass-panel {
+  background: linear-gradient(
+    150deg,
+    rgba(255, 250, 246, 0.84) 0%,
+    rgba(255, 244, 238, 0.72) 55%,
+    rgba(255, 247, 241, 0.76) 100%
+  );
+  backdrop-filter: blur(8px);
+}
+
+.font-accent {
+  font-family: var(--font-great-vibes), cursive;
+}
