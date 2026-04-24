@@ -10,3 +10,5 @@ node_modules
 .env.development
 .env.test
 .env.production
+.codex
+tsconfig.tsbuildinfo

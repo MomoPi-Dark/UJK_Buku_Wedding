@@ -24,7 +24,12 @@ export function AdminLogoutButton() {
   }
 
   return (
-    <button className="btn btn-sm btn-outline" type="button" onClick={() => void handleLogout()} disabled={loading}>
+    <button
+      className="btn btn-sm btn-outline"
+      type="button"
+      onClick={() => void handleLogout()}
+      disabled={loading}
+    >
       {loading ? "Keluar..." : "Logout"}
     </button>
   );

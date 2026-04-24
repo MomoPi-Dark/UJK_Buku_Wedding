@@ -5,6 +5,15 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+function hasRequiredDelegates(client: PrismaClient) {
+  return (
+    "guestVisit" in client &&
+    "guestVisitReaction" in client &&
+    typeof client.guestVisit === "object" &&
+    typeof client.guestVisitReaction === "object"
+  );
+}
+
 function createPrismaClient() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
@@ -23,7 +32,12 @@ function createPrismaClient() {
   return new PrismaClient({ adapter });
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+const cachedPrisma = globalForPrisma.prisma;
+
+export const prisma =
+  cachedPrisma && hasRequiredDelegates(cachedPrisma)
+    ? cachedPrisma
+    : createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;

@@ -3,7 +3,7 @@
 import { FormEvent, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { VISIT_PURPOSE_OPTIONS } from "@/lib/guestbook";
-import { MAX_IMAGE_SIZE_BYTES } from "@/lib/validation";
+import { guestVisitInputSchema, guestVisitPhotoSchema } from "@/lib/validation";
 
 type SubmitState = "idle" | "loading" | "success" | "error";
 
@@ -11,7 +11,6 @@ type FormDataState = {
   name: string;
   institutionOrigin: string;
   address: string;
-  phone: string;
   purpose: (typeof VISIT_PURPOSE_OPTIONS)[number]["value"];
   otherPurposeNote: string;
   photoBase64: string;
@@ -26,18 +25,17 @@ type GuestbookFormProps = {
 
 const QUICK_PURPOSE: Array<{ label: string; value: FormDataState["purpose"] }> =
   [
-    { label: "Doa", value: "OBSERVASI_PPL_WAWANCARA" },
-    { label: "Ucapan Bahagia", value: "PENAWARAN" },
-    { label: "Kenangan", value: "MENGANTAR_SURAT_PERANTARA" },
-    { label: "Lainnya", value: "LAYANAN_LAINNYA" },
+    { label: "Doa", value: "DOA_RESTU" },
+    { label: "Ucapan Bahagia", value: "UCAPAN_BAHAGIA" },
+    { label: "Kenangan", value: "CERITA_KENANGAN" },
+    { label: "Lainnya", value: "UCAPAN_LAINNYA" },
   ];
 
 const DEFAULT_STATE: FormDataState = {
   name: "",
   institutionOrigin: "Sahabat Mempelai",
   address: "",
-  phone: "",
-  purpose: "OBSERVASI_PPL_WAWANCARA",
+  purpose: "DOA_RESTU",
   otherPurposeNote: "",
   photoBase64: "",
   photoMimeType: "",
@@ -55,16 +53,14 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
   const desktopInputRef = useRef<HTMLInputElement | null>(null);
 
   const needsOtherPurpose = useMemo(
-    () => form.purpose === "LAYANAN_LAINNYA",
+    () => form.purpose === "UCAPAN_LAINNYA",
     [form.purpose],
   );
-  const isReadyToSubmit = useMemo(() => {
-    return (
-      form.name.trim().length >= 2 &&
-      form.address.trim().length >= 5 &&
-      form.photoBase64.length > 0
-    );
-  }, [form.name, form.address, form.phone, form.photoBase64]);
+  const formValidation = useMemo(
+    () => guestVisitInputSchema.safeParse(form),
+    [form],
+  );
+  const isReadyToSubmit = formValidation.success;
 
   function resetFileInputs() {
     if (cameraInputRef.current) {
@@ -90,31 +86,39 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
       return;
     }
 
-    if (file.size > MAX_IMAGE_SIZE_BYTES) {
-      setSubmitState("error");
-      setMessage("Ukuran foto maksimal 5MB");
-      resetFileInputs();
-      return;
-    }
-
     const base64 = await fileToBase64(file);
-    setSubmitState("idle");
-    setMessage("");
-    setForm((prev) => ({
-      ...prev,
+    const photoValidation = guestVisitPhotoSchema.safeParse({
       photoBase64: base64,
       photoMimeType: file.type,
       photoFileName: file.name,
       photoSizeBytes: file.size,
+    });
+
+    if (!photoValidation.success) {
+      setSubmitState("error");
+      setMessage(
+        photoValidation.error.issues[0]?.message ?? "Foto kenangan tidak valid",
+      );
+      resetFileInputs();
+      return;
+    }
+
+    setSubmitState("idle");
+    setMessage("");
+    setForm((prev) => ({
+      ...prev,
+      ...photoValidation.data,
     }));
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!form.photoBase64) {
+    if (!formValidation.success) {
       setSubmitState("error");
-      setMessage("Foto kenangan wajib diunggah");
+      setMessage(
+        formValidation.error.issues[0]?.message ?? "Data form tidak valid",
+      );
       return;
     }
 
@@ -125,7 +129,7 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
       const response = await fetch("/api/guestbook", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(formValidation.data),
       });
 
       const json = (await response.json()) as {
@@ -172,7 +176,7 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
-      className="relative overflow-hidden rounded-[2rem] border border-primary/15 bg-[linear-gradient(180deg,rgba(255,251,248,0.94),rgba(255,247,242,0.86))] shadow-[0_26px_70px_rgba(94,63,75,0.12)] backdrop-blur"
+      className="relative overflow-hidden rounded-4xl border border-primary/15 bg-[linear-gradient(180deg,rgba(255,251,248,0.94),rgba(255,247,242,0.86))] shadow-[0_26px_70px_rgba(94,63,75,0.12)] backdrop-blur"
     >
       <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-[linear-gradient(180deg,rgba(183,110,121,0.08),transparent)]" />
       <div className="pointer-events-none absolute -right-10 top-8 h-28 w-28 rounded-full bg-secondary/18 blur-3xl" />
@@ -188,7 +192,7 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
                 Leave a Wedding Blessing
               </h2>
             </div>
-            <span className="rounded-full border border-primary/15 bg-base-100/75 px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-primary/70">
+            <span className="rounded-full border border-primary/15 bg-base-100/75 px-3 py-2 text-[11px] uppercase tracking-[0.22em] text-primary/70">
               Love Letter
             </span>
           </div>
@@ -420,14 +424,16 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
               }
             />
 
-            <span className="label-text-alt mt-1 text-xs opacity-70">
-              Add a small photo keepsake. Maximum 5MB in JPG, PNG, or WEBP.
-            </span>
-            {form.photoFileName ? (
-              <span className="label-text-alt mt-1 text-xs text-primary">
-                Selected file: {form.photoFileName}
+            <div className="flex flex-col pt-2">
+              <span className="label-text-alt mt-1 text-xs opacity-70">
+                Add a small photo keepsake. Maximum 5MB in JPG, PNG, or WEBP.
               </span>
-            ) : null}
+              {form.photoFileName ? (
+                <span className="label-text-alt mt-1 text-xs text-primary">
+                  Selected file: {form.photoFileName}
+                </span>
+              ) : null}
+            </div>
           </label>
         </div>
 

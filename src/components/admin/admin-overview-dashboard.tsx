@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Cell,
@@ -13,10 +13,15 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { AdminVisitFormDialog } from "@/components/admin-visit-form-dialog";
+import { AdminVisitFormDialog } from "@/components/admin/admin-visit-form-dialog";
+import { AdminDashboardShell } from "@/components/admin/admin-dashboard-shell";
 import { getPurposeLabel } from "@/lib/guestbook";
 import { formatIdDateTime } from "@/lib/time";
 import type { VisitPurposeValue } from "@/lib/guestbook";
+import type {
+  ReactionType,
+  WallMessage,
+} from "@/components/guest/message-card";
 
 type DashboardData = {
   totals: {
@@ -32,11 +37,11 @@ type DashboardData = {
     name: string;
     institutionOrigin: string;
     address: string;
-    phone: string;
     purpose: VisitPurposeValue;
     otherPurposeNote: string | null;
     photoFolderPath: string;
     visitAt: string;
+    reactions: Record<ReactionType, number>;
   }>;
 };
 
@@ -57,7 +62,7 @@ const PIE_COLORS = [
   "#46B3C6",
 ];
 
-export function AdminDashboard() {
+export function AdminOverviewDashboard() {
   const [range, setRange] =
     useState<(typeof RANGE_OPTIONS)[number]["value"]>("30d");
   const [data, setData] = useState<DashboardData | null>(null);
@@ -75,7 +80,33 @@ export function AdminDashboard() {
   } | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [dialogMode, setDialogMode] = useState<"create" | "edit" | null>(null);
-  const [editingVisit, setEditingVisit] = useState<DashboardData["latestVisits"][number] | null>(null);
+  const [editingVisit, setEditingVisit] = useState<
+    DashboardData["latestVisits"][number] | null
+  >(null);
+
+  const wallMessages = useMemo(
+    () =>
+      data?.latestVisits.map((visit, index) => toWallMessage(visit, index)) ??
+      [],
+    [data],
+  );
+
+  const highlightedMessage = useMemo(
+    () => wallMessages.find((message) => message.highlighted) ?? null,
+    [wallMessages],
+  );
+
+  const reactionSummary = useMemo(() => {
+    return wallMessages.reduce(
+      (accumulator, message) => {
+        accumulator.heart += message.reactions.heart;
+        accumulator.bouquet += message.reactions.bouquet;
+        accumulator.sparkle += message.reactions.sparkle;
+        return accumulator;
+      },
+      { heart: 0, bouquet: 0, sparkle: 0 },
+    );
+  }, [wallMessages]);
 
   const loadDashboard = useCallback(async () => {
     setLoading(true);
@@ -182,40 +213,12 @@ export function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold text-primary">
-          Dashboard Buku Tamu
-        </h1>
-        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-          <button
-            type="button"
-            className="btn btn-primary btn-sm"
-            onClick={() => {
-              setEditingVisit(null);
-              setDialogMode("create");
-            }}
-          >
-            Tambah Data
-          </button>
-          <div className="join">
-            {RANGE_OPTIONS.map((item) => (
-              <button
-                key={item.value}
-                type="button"
-                className={`btn join-item btn-sm ${range === item.value ? "btn-primary" : "btn-ghost"}`}
-                onClick={() => setRange(item.value)}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+    <AdminDashboardShell activeSection="overview">
+      {loading ? <div className="skeleton h-96 w-full rounded-box" /> : null}
 
-      {loading && <div className="skeleton h-96 w-full rounded-box" />}
-
-      {error && !loading && <div className="alert alert-error">{error}</div>}
+      {error && !loading ? (
+        <div className="alert alert-error">{error}</div>
+      ) : null}
 
       {actionMessage ? (
         <div
@@ -225,7 +228,7 @@ export function AdminDashboard() {
         </div>
       ) : null}
 
-      {data && !loading && (
+      {data && !loading ? (
         <AnimatePresence mode="wait">
           <motion.div
             key={range}
@@ -236,7 +239,10 @@ export function AdminDashboard() {
             className="space-y-5"
           >
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              <StatCard label={`Total ${range}`} value={data.totals.range} />
+              <StatCard
+                label={`Love Notes ${range}`}
+                value={data.totals.range}
+              />
               <StatCard label="Hari Ini" value={data.totals.today} />
               <StatCard label="7 Hari" value={data.totals.week} />
               <StatCard label="Bulan Ini" value={data.totals.month} />
@@ -246,7 +252,7 @@ export function AdminDashboard() {
               <div className="card bg-base-100 shadow-sm">
                 <div className="card-body">
                   <h2 className="card-title text-lg text-primary">
-                    Tren Kunjungan Harian
+                    Tren Love Notes Harian
                   </h2>
                   <div className="h-64 md:h-72">
                     <ResponsiveContainer width="100%" height="100%">
@@ -270,7 +276,7 @@ export function AdminDashboard() {
               <div className="card bg-base-100 shadow-sm">
                 <div className="card-body">
                   <h2 className="card-title text-lg text-primary">
-                    Distribusi Keperluan
+                    Distribusi Kategori Memory Wall
                   </h2>
                   <div className="h-64 md:h-72">
                     <ResponsiveContainer width="100%" height="100%">
@@ -304,17 +310,18 @@ export function AdminDashboard() {
             <div className="card bg-base-100 shadow-sm">
               <div className="card-body">
                 <h2 className="card-title text-lg text-primary">
-                  Data Kunjungan Terbaru
+                  Daftar Kunjungan Terbaru
                 </h2>
                 <div className="overflow-x-auto">
                   <table className="table table-sm md:table-md">
                     <thead>
                       <tr>
                         <th>Waktu</th>
-                        <th>Nama</th>
-                        <th>Instansi</th>
-                        <th>Keterangan</th>
-                        <th>Keperluan</th>
+                        <th>Penulis</th>
+                        <th>Pesan</th>
+                        <th>Asal</th>
+                        <th>Kategori</th>
+                        <th>Reaksi</th>
                         <th>Aksi</th>
                       </tr>
                     </thead>
@@ -324,21 +331,31 @@ export function AdminDashboard() {
                           <td>{formatIdDateTime(new Date(visit.visitAt))}</td>
                           <td>
                             <div className="font-semibold">{visit.name}</div>
-                            <div className="text-xs opacity-70">
-                              {visit.phone}
-                            </div>
                           </td>
-                          <td>{visit.institutionOrigin}</td>
-                          <td className="max-w-xs whitespace-normal text-xs opacity-80">
+                          <td className="max-w-sm whitespace-normal text-xs opacity-80">
                             {visit.address}
                           </td>
+                          <td>{visit.institutionOrigin}</td>
                           <td>
-                            {getPurposeLabel(visit.purpose)}
+                            <div>{getPurposeLabel(visit.purpose)}</div>
                             {visit.otherPurposeNote ? (
                               <div className="text-xs opacity-70">
                                 {visit.otherPurposeNote}
                               </div>
                             ) : null}
+                          </td>
+                          <td>
+                            <div className="flex flex-wrap gap-1 text-xs">
+                              <span className="badge badge-ghost badge-sm">
+                                ❤️ {visit.reactions.heart}
+                              </span>
+                              <span className="badge badge-ghost badge-sm">
+                                💐 {visit.reactions.bouquet}
+                              </span>
+                              <span className="badge badge-ghost badge-sm">
+                                ✨ {visit.reactions.sparkle}
+                              </span>
+                            </div>
                           </td>
                           <td>
                             <div className="flex flex-wrap gap-2">
@@ -387,7 +404,34 @@ export function AdminDashboard() {
             </div>
           </motion.div>
         </AnimatePresence>
-      )}
+      ) : null}
+
+      {highlightedMessage ? (
+        <div className="card bg-base-100 shadow-sm">
+          <div className="card-body gap-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h2 className="card-title text-lg text-primary">
+                  Highlight Home Page
+                </h2>
+                <p className="text-sm opacity-70">
+                  Pesan paling atas dari wall yang tampil di home page.
+                </p>
+              </div>
+              <span className="badge badge-outline badge-primary">
+                {highlightedMessage.category}
+              </span>
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-4">
+              <StatCard label="❤️ Hearts" value={reactionSummary.heart} />
+              <StatCard label="💐 Bouquets" value={reactionSummary.bouquet} />
+              <StatCard label="✨ Sparkles" value={reactionSummary.sparkle} />
+              <StatCard label="Highlight" value={1} />
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {selectedPhoto ? (
         <div
@@ -408,7 +452,7 @@ export function AdminDashboard() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h3 className="text-xl font-semibold text-primary">
-                  Foto Kunjungan
+                  Foto Bukti Undangan: {selectedPhoto.name}
                 </h3>
                 <p className="text-sm opacity-70">
                   {selectedPhoto.name} •{" "}
@@ -434,7 +478,7 @@ export function AdminDashboard() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={`/api/admin/photo/${selectedPhoto.id}`}
-                  alt={`Foto kunjungan ${selectedPhoto.name}`}
+                  alt={`Foto Bukti Undangan ${selectedPhoto.name}`}
                   className="mx-auto max-h-[72vh] w-full rounded-lg object-contain"
                   onError={() => setPhotoError("Foto gagal dimuat")}
                 />
@@ -456,7 +500,6 @@ export function AdminDashboard() {
                   name: editingVisit.name,
                   institutionOrigin: editingVisit.institutionOrigin,
                   address: editingVisit.address,
-                  phone: editingVisit.phone,
                   purpose: editingVisit.purpose,
                   otherPurposeNote: editingVisit.otherPurposeNote ?? "",
                 }
@@ -478,8 +521,29 @@ export function AdminDashboard() {
           }}
         />
       ) : null}
-    </div>
+    </AdminDashboardShell>
   );
+}
+
+function toWallMessage(
+  visit: DashboardData["latestVisits"][number],
+  index: number,
+): WallMessage {
+  return {
+    id: visit.id,
+    author: visit.name,
+    message: visit.address,
+    origin: visit.institutionOrigin,
+    category: getPurposeLabel(visit.purpose),
+    visitAt: visit.visitAt,
+    highlighted: index === 0,
+    reactions: visit.reactions,
+    viewerReactions: {
+      heart: false,
+      bouquet: false,
+      sparkle: false,
+    },
+  };
 }
 
 function StatCard({ label, value }: { label: string; value: number }) {

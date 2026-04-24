@@ -13,12 +13,13 @@ export type WallMessage = {
   visitAt: string;
   highlighted: boolean;
   reactions: Record<ReactionType, number>;
+  viewerReactions: Record<ReactionType, boolean>;
 };
 
 type MessageCardProps = {
   message: WallMessage;
-  reactionTotals: Record<ReactionType, number>;
   onReact: (messageId: number, reaction: ReactionType) => void;
+  reacting?: ReactionType | null;
   dense?: boolean;
 };
 
@@ -30,8 +31,8 @@ const REACTION_META: Record<ReactionType, { icon: string; label: string }> = {
 
 export function MessageCard({
   message,
-  reactionTotals,
   onReact,
+  reacting = null,
   dense = false,
 }: MessageCardProps) {
   return (
@@ -86,12 +87,17 @@ export function MessageCard({
             <button
               key={reaction}
               type="button"
-              className="btn btn-ghost btn-xs gap-1 rounded-full border border-primary/10 bg-base-100/72 px-2.5"
+              className={`btn btn-xs gap-1 rounded-full px-2.5 ${
+                message.viewerReactions[reaction]
+                  ? "btn-primary border-primary/20"
+                  : "btn-ghost border border-primary/10 bg-base-100/72"
+              }`}
               onClick={() => onReact(message.id, reaction)}
               aria-label={REACTION_META[reaction].label}
+              disabled={reacting === reaction}
             >
               <span>{REACTION_META[reaction].icon}</span>
-              <span>{reactionTotals[reaction]}</span>
+              <span>{message.reactions[reaction]}</span>
             </button>
           ))}
         </div>

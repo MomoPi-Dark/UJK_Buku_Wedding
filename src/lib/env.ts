@@ -15,8 +15,14 @@ function normalizeGoogleScriptWebAppUrl(url: string): string {
   return url.trim().replace(/\/dev\/?$/, "/exec");
 }
 
+function normalizeAdminIdentifier(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, "_");
+}
+
 export function getGoogleScriptUploadUrl(): string {
-  return normalizeGoogleScriptWebAppUrl(getRequired("GOOGLE_SCRIPT_UPLOAD_URL"));
+  return normalizeGoogleScriptWebAppUrl(
+    getRequired("GOOGLE_SCRIPT_UPLOAD_URL"),
+  );
 }
 
 export function getGoogleScriptToken(): string {
@@ -24,11 +30,26 @@ export function getGoogleScriptToken(): string {
 }
 
 export function getGoogleScriptFileProxyUrl(): string {
-  return normalizeGoogleScriptWebAppUrl(getRequired("GOOGLE_SCRIPT_FILE_PROXY_URL"));
+  return normalizeGoogleScriptWebAppUrl(
+    getRequired("GOOGLE_SCRIPT_FILE_PROXY_URL"),
+  );
 }
 
 export function getAdminUsername(): string {
   return getRequired("ADMIN_USERNAME");
+}
+
+export function getAdminEmail(): string {
+  const configured = getOptional("ADMIN_EMAIL");
+  if (configured) {
+    return configured.toLowerCase();
+  }
+
+  return `${normalizeAdminIdentifier(getAdminUsername())}@admin.local`;
+}
+
+export function getAdminDisplayName(): string {
+  return getOptional("ADMIN_NAME") ?? "Admin TU";
 }
 
 export function getAdminPasswordHash(): string {
@@ -37,6 +58,10 @@ export function getAdminPasswordHash(): string {
 
 export function getAdminSessionSecret(): string {
   return getRequired("ADMIN_SESSION_SECRET");
+}
+
+export function getBetterAuthSecret(): string {
+  return getRequired("BETTER_AUTH_SECRET");
 }
 
 export function getBetterAuthUrl(): string | undefined {

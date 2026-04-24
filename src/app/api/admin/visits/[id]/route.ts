@@ -51,7 +51,10 @@ export async function PATCH(request: Request, context: Context) {
     return NextResponse.json(
       {
         ok: false,
-        error: { code: "VALIDATION_ERROR", message: parsed.error.issues[0]?.message ?? "Data tidak valid" },
+        error: {
+          code: "VALIDATION_ERROR",
+          message: parsed.error.issues[0]?.message ?? "Data tidak valid",
+        },
       },
       { status: 400 },
     );
@@ -66,10 +69,11 @@ export async function PATCH(request: Request, context: Context) {
         name: payload.name,
         institutionOrigin: payload.institutionOrigin,
         address: payload.address,
-        phone: sanitizePhone(payload.phone),
         purpose: payload.purpose as VisitPurpose,
         otherPurposeNote:
-          payload.purpose === "LAYANAN_LAINNYA" ? (payload.otherPurposeNote?.trim() ?? null) : null,
+          payload.purpose === "UCAPAN_LAINNYA"
+            ? (payload.otherPurposeNote?.trim() ?? null)
+            : null,
       },
       select: {
         id: true,
@@ -81,7 +85,10 @@ export async function PATCH(request: Request, context: Context) {
       data: updated,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Gagal memperbarui data kunjungan";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Gagal memperbarui data kunjungan";
     return NextResponse.json(
       {
         ok: false,
@@ -138,7 +145,8 @@ export async function DELETE(_request: Request, context: Context) {
   try {
     await deleteVisitPhoto(visit.photoFileId);
   } catch (error) {
-    const rawMessage = error instanceof Error ? error.message : "Gagal menghapus foto kunjungan";
+    const rawMessage =
+      error instanceof Error ? error.message : "Gagal menghapus foto kunjungan";
     const normalizedMessage = rawMessage.toLowerCase();
     const needsScriptUpdate =
       normalizedMessage.includes("unsupported action") ||
@@ -147,7 +155,7 @@ export async function DELETE(_request: Request, context: Context) {
       normalizedMessage.includes("invalid field: purpose") ||
       normalizedMessage.includes("invalid field: mimetype");
     const message = needsScriptUpdate
-      ? "Endpoint Apps Script upload belum support action delete. Update script memakai docs/google-apps-script/upload.gs lalu redeploy /exec."
+      ? "Endpoint Apps Script upload belum support action delete. Update endpoint upload lalu redeploy /exec."
       : rawMessage;
 
     return NextResponse.json(
@@ -164,7 +172,8 @@ export async function DELETE(_request: Request, context: Context) {
       where: { id: visit.id },
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Gagal menghapus data kunjungan";
+    const message =
+      error instanceof Error ? error.message : "Gagal menghapus data kunjungan";
     return NextResponse.json(
       {
         ok: false,

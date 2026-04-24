@@ -1,12 +1,12 @@
 export const VISIT_PURPOSE_VALUES = [
-  "OBSERVASI_PPL_WAWANCARA",
-  "PENAWARAN",
-  "MENGANTAR_SURAT_PERANTARA",
-  "INFORMASI_PMB",
-  "LEGALISIR",
-  "KONSULTASI_PENDIDIKAN",
-  "PENJENGUKAN_SANTRI_SANTRIWATI",
-  "LAYANAN_LAINNYA",
+  "DOA_RESTU",
+  "UCAPAN_BAHAGIA",
+  "CERITA_KENANGAN",
+  "NASIHAT_PERNIKAHAN",
+  "DOA_KELUARGA",
+  "HARAPAN_MASA_DEPAN",
+  "SALAM_KEHADIRAN",
+  "UCAPAN_LAINNYA",
 ] as const;
 
 export type VisitPurposeValue = (typeof VISIT_PURPOSE_VALUES)[number];
@@ -15,17 +15,17 @@ export const VISIT_PURPOSE_OPTIONS: Array<{
   value: VisitPurposeValue;
   label: string;
 }> = [
-  { value: "OBSERVASI_PPL_WAWANCARA", label: "Doa Restu" },
-  { value: "PENAWARAN", label: "Ucapan Bahagia" },
-  { value: "MENGANTAR_SURAT_PERANTARA", label: "Cerita Kenangan" },
-  { value: "INFORMASI_PMB", label: "Nasihat Pernikahan" },
-  { value: "LEGALISIR", label: "Doa Keluarga" },
-  { value: "KONSULTASI_PENDIDIKAN", label: "Harapan Masa Depan" },
+  { value: "DOA_RESTU", label: "Doa Restu" },
+  { value: "UCAPAN_BAHAGIA", label: "Ucapan Bahagia" },
+  { value: "CERITA_KENANGAN", label: "Cerita Kenangan" },
+  { value: "NASIHAT_PERNIKAHAN", label: "Nasihat Pernikahan" },
+  { value: "DOA_KELUARGA", label: "Doa Keluarga" },
+  { value: "HARAPAN_MASA_DEPAN", label: "Harapan Masa Depan" },
   {
-    value: "PENJENGUKAN_SANTRI_SANTRIWATI",
+    value: "SALAM_KEHADIRAN",
     label: "Salam Kehadiran",
   },
-  { value: "LAYANAN_LAINNYA", label: "Ucapan Lainnya" },
+  { value: "UCAPAN_LAINNYA", label: "Ucapan Lainnya" },
 ];
 
 export const VISIT_PURPOSE_LABEL_MAP = new Map(

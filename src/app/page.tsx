@@ -1,5 +1,10 @@
-import { GuestMessageFeed } from "../components/guest-message-feed";
-import { GuestbookForm } from "@/components/guestbook-form";
+import { GuestMessageFeed } from "../components/guest/guest-message-feed";
+import { GuestbookForm } from "@/components/guest/guestbook-form";
+
+const BRIDE_NAME = process.env.NEXT_PUBLIC_BRIDE_NAME || "Alya";
+const GROOM_NAME = process.env.NEXT_PUBLIC_GROOM_NAME || "Raka";
+const WEDDING_DATE =
+  process.env.NEXT_PUBLIC_WEDDING_DATE || "Sabtu, 21 Juni 2026 • Jakarta";
 
 export default function Home() {
   return (
@@ -30,47 +35,21 @@ export default function Home() {
               </p>
               <h1 className="text-3xl font-semibold leading-tight md:text-4xl">
                 <span className="font-accent block text-4xl text-secondary md:text-5xl">
-                  Alya &amp; Raka
+                  {BRIDE_NAME} &amp; {GROOM_NAME}
                 </span>
-                Love Notes Memory Wall
+                Wedding Wishes &amp; Blessings
               </h1>
               <p className="text-sm font-medium tracking-wide text-primary/80">
-                Sabtu, 21 Juni 2026 • Jakarta
+                {WEDDING_DATE}
               </p>
               <p className="max-w-2xl text-sm opacity-80 md:text-base">
                 Terima kasih sudah hadir di hari istimewa kami. Tinggalkan doa,
                 ucapan, dan kenangan agar momen ini tetap hidup sepanjang waktu.
               </p>
 
-              <div className="grid gap-2 text-sm sm:grid-cols-3">
-                <div className="rounded-xl border border-primary/10 bg-base-100/70 p-3">
-                  <p className="text-xs uppercase tracking-wide text-primary/60">
-                    Love Notes
-                  </p>
-                  <p className="text-xl font-semibold text-primary">Live</p>
-                  <p className="opacity-80">Ucapan tamu tampil real-time</p>
-                </div>
-                <div className="rounded-xl border border-primary/10 bg-base-100/70 p-3">
-                  <p className="text-xs uppercase tracking-wide text-primary/60">
-                    Blessings
-                  </p>
-                  <p className="text-xl font-semibold text-primary">
-                    Highlight
-                  </p>
-                  <p className="opacity-80">Doa terhangat ditampilkan khusus</p>
-                </div>
-                <div className="rounded-xl border border-primary/10 bg-base-100/70 p-3">
-                  <p className="text-xs uppercase tracking-wide text-primary/60">
-                    Memories
-                  </p>
-                  <p className="text-xl font-semibold text-primary">Timeless</p>
-                  <p className="opacity-80">Setiap pesan tersimpan abadi</p>
-                </div>
-              </div>
-
               <p className="text-sm opacity-75">
-                Tuliskan love note Anda di panel kanan. Setelah terkirim, ucapan
-                akan langsung muncul di memory wall pernikahan.
+                Tuliskan pesan dan doa restu Anda di panel kanan. Setelah
+                terkirim, ucapan akan langsung muncul di memory wall pernikahan.
               </p>
             </div>
           </section>

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
-import { AdminLoginForm } from "@/components/admin-login-form";
-import { ensureAdminUser, getAdminSession } from "@/lib/auth";
+import { headers } from "next/headers";
+import { AdminLoginForm } from "@/components/admin/admin-login-form";
+import { auth, getDefaultAdminEmail } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -11,9 +12,10 @@ type AdminLoginPageProps = {
 export default async function AdminLoginPage({
   searchParams,
 }: AdminLoginPageProps) {
-  await ensureAdminUser();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-  const session = await getAdminSession();
   if (session) {
     redirect("/admin");
   }
@@ -30,7 +32,7 @@ export default async function AdminLoginPage({
         }}
       />
       <div className="relative mx-auto grid w-full max-w-6xl gap-6 px-4 py-8 sm:py-10 lg:grid-cols-[1.05fr_440px] lg:items-center lg:px-8 lg:py-14">
-        <section className="order-2 hidden rounded-box border border-primary/10 bg-gradient-to-br from-primary to-secondary p-8 text-primary-content shadow-xl lg:order-1 lg:block">
+        <section className="order-2 hidden rounded-box border border-primary/10 bg-linear-to-br from-primary to-secondary p-8 text-primary-content shadow-xl lg:order-1 lg:block">
           <p className="badge badge-accent badge-outline w-fit">AREA ADMIN</p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight">
             Panel Admin
@@ -42,7 +44,10 @@ export default async function AdminLoginPage({
         </section>
 
         <div className="order-1 w-full max-w-md justify-self-center lg:order-2 lg:max-w-xl lg:justify-self-end">
-          <AdminLoginForm nextPath={resolvedSearchParams.next} />
+          <AdminLoginForm
+            nextPath={resolvedSearchParams.next}
+            initialEmail={getDefaultAdminEmail()}
+          />
         </div>
       </div>
     </main>

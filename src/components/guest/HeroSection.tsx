@@ -8,6 +8,11 @@ const HERO_QUOTES = [
   "Thank you for bringing your love to our happiest day.",
 ];
 
+const BRIDE_NAME = process.env.NEXT_PUBLIC_BRIDE_NAME || "Alya";
+const GROOM_NAME = process.env.NEXT_PUBLIC_GROOM_NAME || "Raka";
+const WEDDING_DATE =
+  process.env.NEXT_PUBLIC_WEDDING_DATE || "Saturday, 21 June 2026";
+
 export function HeroSection() {
   return (
     <section className="relative overflow-hidden rounded-[2rem] border border-primary/15 bg-[linear-gradient(140deg,rgba(255,252,249,0.92),rgba(255,244,240,0.78),rgba(248,239,230,0.9))] px-5 py-6 shadow-[0_30px_80px_rgba(94,63,75,0.12)] backdrop-blur md:px-8 md:py-10">
@@ -26,7 +31,7 @@ export function HeroSection() {
             <span className="rounded-full border border-primary/15 bg-base-100/70 px-3 py-1">
               Wedding Digital Guestbook
             </span>
-            <span>Saturday, 21 June 2026</span>
+            <span>{WEDDING_DATE}</span>
           </div>
 
           <div className="space-y-2">
@@ -34,11 +39,13 @@ export function HeroSection() {
               The Wedding Of
             </p>
             <h1 className="font-heading text-5xl leading-none text-primary md:text-7xl">
-              Alya <span className="px-1 text-secondary">&amp;</span> Raka
+              {BRIDE_NAME} <span className="px-1 text-secondary">&amp;</span>{" "}
+              {GROOM_NAME}
             </h1>
             <p className="max-w-2xl text-base leading-7 text-foreground/78 md:text-lg">
               Welcome to our wedding memory space. Leave a blessing, a little
-              prayer, or a love note that will live here as part of our day.
+              prayer, or a heartfelt message that will live here as part of our
+              day.
             </p>
           </div>
 

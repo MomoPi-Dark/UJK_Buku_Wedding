@@ -1,21 +1,22 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth, ensureAdminUser } from "@/lib/auth";
+import { getSessionCookie } from "better-auth/cookies";
 
 const PUBLIC_ADMIN_PATHS = new Set(["/admin/login"]);
+const PUBLIC_ADMIN_API_PATHS = new Set(["/api/admin/login"]);
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (PUBLIC_ADMIN_PATHS.has(pathname) || pathname.startsWith("/api/auth")) {
+  if (
+    PUBLIC_ADMIN_PATHS.has(pathname) ||
+    PUBLIC_ADMIN_API_PATHS.has(pathname)
+  ) {
     return NextResponse.next();
   }
 
-  await ensureAdminUser();
-  const session = await auth.api.getSession({
-    headers: request.headers,
-  });
-  if (!session) {
+  const sessionCookie = getSessionCookie(request);
+  if (!sessionCookie) {
     return redirectToLogin(request);
   }
 

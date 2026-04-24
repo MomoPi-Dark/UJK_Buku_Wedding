@@ -6,7 +6,7 @@ import {
   MessageCard,
   ReactionType,
   WallMessage,
-} from "@/components/message-card";
+} from "@/components/guest/message-card";
 
 type FeedResponse = {
   ok: boolean;
@@ -18,15 +18,29 @@ type FeedResponse = {
   };
 };
 
-type ReactionBoost = Record<number, Record<ReactionType, number>>;
+type ReactionResponse = {
+  ok: boolean;
+  data?: {
+    messageId: number;
+    reactions: Record<ReactionType, number>;
+    viewerReactions: Record<ReactionType, boolean>;
+  };
+  error?: {
+    message?: string;
+  };
+};
 
 const POLL_INTERVAL_MS = 25_000;
+const REACTOR_ID_STORAGE_KEY = "guestbook-reactor-id";
 
 export function GuestMessageFeed() {
   const [messages, setMessages] = useState<WallMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [reactionBoost, setReactionBoost] = useState<ReactionBoost>({});
+  const [reactorId, setReactorId] = useState<string>("");
+  const [pendingReaction, setPendingReaction] = useState<
+    Record<number, ReactionType | null>
+  >({});
   const [lastUpdated, setLastUpdated] = useState<string>("");
 
   const loadMessages = useCallback(async (silent = false) => {
@@ -36,7 +50,13 @@ export function GuestMessageFeed() {
 
     setError(null);
     try {
-      const response = await fetch("/api/wall?limit=18", { cache: "no-store" });
+      const query = new URLSearchParams({ limit: "18" });
+      if (reactorId) {
+        query.set("reactorId", reactorId);
+      }
+      const response = await fetch(`/api/wall?${query.toString()}`, {
+        cache: "no-store",
+      });
       const json = (await response.json()) as FeedResponse;
 
       if (!response.ok || !json.ok || !json.data) {
@@ -56,9 +76,28 @@ export function GuestMessageFeed() {
         setLoading(false);
       }
     }
+  }, [reactorId]);
+
+  useEffect(() => {
+    const stored =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem(REACTOR_ID_STORAGE_KEY)
+        : null;
+    const nextReactorId =
+      stored && stored.length >= 8 ? stored : crypto.randomUUID();
+
+    if (typeof window !== "undefined" && stored !== nextReactorId) {
+      window.localStorage.setItem(REACTOR_ID_STORAGE_KEY, nextReactorId);
+    }
+
+    setReactorId(nextReactorId);
   }, []);
 
   useEffect(() => {
+    if (!reactorId) {
+      return;
+    }
+
     const bootId = window.setTimeout(() => {
       void loadMessages();
     }, 0);
@@ -78,7 +117,7 @@ export function GuestMessageFeed() {
       window.clearInterval(intervalId);
       window.removeEventListener("guestbook:posted", onPosted);
     };
-  }, [loadMessages]);
+  }, [loadMessages, reactorId]);
 
   const highlightedMessage = useMemo(() => {
     return messages.find((item) => item.highlighted) ?? messages[0] ?? null;
@@ -92,28 +131,57 @@ export function GuestMessageFeed() {
     return messages.filter((item) => item.id !== highlightedMessage.id);
   }, [messages, highlightedMessage]);
 
-  function getReactionTotals(
-    message: WallMessage,
-  ): Record<ReactionType, number> {
-    const boost = reactionBoost[message.id];
-    return {
-      heart: message.reactions.heart + (boost?.heart ?? 0),
-      bouquet: message.reactions.bouquet + (boost?.bouquet ?? 0),
-      sparkle: message.reactions.sparkle + (boost?.sparkle ?? 0),
-    };
-  }
+  async function handleReact(messageId: number, reaction: ReactionType) {
+    if (!reactorId) {
+      return;
+    }
 
-  function handleReact(messageId: number, reaction: ReactionType) {
-    setReactionBoost((prev) => {
-      const current = prev[messageId] ?? { heart: 0, bouquet: 0, sparkle: 0 };
-      return {
-        ...prev,
-        [messageId]: {
-          ...current,
-          [reaction]: current[reaction] + 1,
+    setPendingReaction((prev) => ({
+      ...prev,
+      [messageId]: reaction,
+    }));
+
+    try {
+      const response = await fetch("/api/wall/reactions", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
         },
-      };
-    });
+        body: JSON.stringify({
+          messageId,
+          reaction,
+          reactorId,
+        }),
+      });
+      const json = (await response.json()) as ReactionResponse;
+
+      if (!response.ok || !json.ok || !json.data) {
+        throw new Error(json.error?.message ?? "Gagal mengirim reaksi");
+      }
+
+      setMessages((prev) =>
+        prev.map((message) =>
+          message.id === json.data?.messageId
+            ? {
+                ...message,
+                reactions: json.data.reactions,
+                viewerReactions: json.data.viewerReactions,
+              }
+            : message,
+        ),
+      );
+    } catch (reactionError) {
+      setError(
+        reactionError instanceof Error
+          ? reactionError.message
+          : "Gagal mengirim reaksi",
+      );
+    } finally {
+      setPendingReaction((prev) => ({
+        ...prev,
+        [messageId]: null,
+      }));
+    }
   }
 
   return (
@@ -156,8 +224,8 @@ export function GuestMessageFeed() {
           </p>
           <MessageCard
             message={highlightedMessage}
-            reactionTotals={getReactionTotals(highlightedMessage)}
             onReact={handleReact}
+            reacting={pendingReaction[highlightedMessage.id] ?? null}
           />
         </div>
       ) : null}
@@ -172,8 +240,8 @@ export function GuestMessageFeed() {
               <MessageCard
                 key={item.id}
                 message={item}
-                reactionTotals={getReactionTotals(item)}
                 onReact={handleReact}
+                reacting={pendingReaction[item.id] ?? null}
                 dense
               />
             ))}

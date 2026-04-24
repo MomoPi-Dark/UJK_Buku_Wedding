@@ -8,14 +8,20 @@ datasource db {
 }
 
 enum VisitPurpose {
-  OBSERVASI_PPL_WAWANCARA
-  PENAWARAN
-  MENGANTAR_SURAT_PERANTARA
-  INFORMASI_PMB
-  LEGALISIR
-  KONSULTASI_PENDIDIKAN
-  PENJENGUKAN_SANTRI_SANTRIWATI
-  LAYANAN_LAINNYA
+  DOA_RESTU
+  UCAPAN_BAHAGIA
+  CERITA_KENANGAN
+  NASIHAT_PERNIKAHAN
+  DOA_KELUARGA
+  HARAPAN_MASA_DEPAN
+  SALAM_KEHADIRAN
+  UCAPAN_LAINNYA
+}
+
+enum GuestReactionType {
+  heart
+  bouquet
+  sparkle
 }
 
 model GuestVisit {
@@ -23,7 +29,6 @@ model GuestVisit {
   name              String       @db.VarChar(120)
   institutionOrigin String       @db.VarChar(160)
   address           String       @db.VarChar(300)
-  phone             String       @db.VarChar(30)
   purpose           VisitPurpose
   otherPurposeNote  String?      @db.VarChar(255)
   photoFileId       String       @db.VarChar(191)
@@ -35,6 +40,7 @@ model GuestVisit {
   visitAt           DateTime     @default(now())
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
+  reactions         GuestVisitReaction[]
 
   @@index([visitAt])
   @@index([purpose])
@@ -42,10 +48,26 @@ model GuestVisit {
   @@map("guest_visits")
 }
 
+model GuestVisitReaction {
+  id           Int               @id @default(autoincrement())
+  guestVisitId Int
+  reactionType GuestReactionType
+  reactorId    String            @db.VarChar(191)
+  createdAt    DateTime          @default(now())
+  guestVisit   GuestVisit        @relation(fields: [guestVisitId], references: [id], onDelete: Cascade)
+
+  @@unique([guestVisitId, reactionType, reactorId])
+  @@index([guestVisitId])
+  @@index([reactionType])
+  @@index([reactorId])
+  @@map("guest_visit_reactions")
+}
+
 model User {
   id              String    @id
   name            String    @db.Text
   email           String
+  passwordHash    String    @default("") @db.VarChar(191)
   emailVerified   Boolean   @default(false)
   image           String?   @db.Text
   createdAt       DateTime  @default(now())

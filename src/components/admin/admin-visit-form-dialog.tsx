@@ -2,14 +2,13 @@
 
 import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import { VISIT_PURPOSE_OPTIONS } from "@/lib/guestbook";
-import { MAX_IMAGE_SIZE_BYTES } from "@/lib/validation";
+import { MAX_IMAGE_SIZE_BYTES, adminVisitUpdateSchema } from "@/lib/validation";
 
 type VisitFormValue = {
   id?: number;
   name: string;
   institutionOrigin: string;
   address: string;
-  phone: string;
   purpose: (typeof VISIT_PURPOSE_OPTIONS)[number]["value"];
   otherPurposeNote: string;
 };
@@ -33,8 +32,7 @@ const EMPTY_FORM: VisitFormValue = {
   name: "",
   institutionOrigin: "",
   address: "",
-  phone: "",
-  purpose: "OBSERVASI_PPL_WAWANCARA",
+  purpose: "DOA_RESTU",
   otherPurposeNote: "",
 };
 
@@ -58,7 +56,7 @@ export function AdminVisitFormDialog({
   const [error, setError] = useState<string | null>(null);
 
   const needsOtherPurpose = useMemo(
-    () => form.purpose === "LAYANAN_LAINNYA",
+    () => form.purpose === "UCAPAN_LAINNYA",
     [form.purpose],
   );
 
@@ -94,6 +92,13 @@ export function AdminVisitFormDialog({
     setLoading(true);
     setError(null);
 
+    const validation = adminVisitUpdateSchema.safeParse(form);
+    if (!validation.success) {
+      setError(validation.error.issues[0]?.message ?? "Data tidak valid");
+      setLoading(false);
+      return;
+    }
+
     try {
       const payload =
         mode === "create"
@@ -104,7 +109,9 @@ export function AdminVisitFormDialog({
           : form;
 
       const response = await fetch(
-        mode === "create" ? "/api/admin/visits" : `/api/admin/visits/${form.id}`,
+        mode === "create"
+          ? "/api/admin/visits"
+          : `/api/admin/visits/${form.id}`,
         {
           method: mode === "create" ? "POST" : "PATCH",
           headers: { "content-type": "application/json" },
@@ -124,7 +131,11 @@ export function AdminVisitFormDialog({
       await onSaved();
       onClose();
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Gagal menyimpan data");
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Gagal menyimpan data",
+      );
     } finally {
       setLoading(false);
     }
@@ -132,7 +143,7 @@ export function AdminVisitFormDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm transition-all"
       onClick={(event) => {
         if (event.currentTarget === event.target && !loading) {
           onClose();
@@ -146,13 +157,18 @@ export function AdminVisitFormDialog({
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold text-primary">
-                  {mode === "create" ? "Tambah Kunjungan" : "Edit Kunjungan"}
+                  {mode === "create" ? "Tambah Data Tamu" : "Edit Data Tamu"}
                 </h2>
                 <p className="text-sm opacity-70">
-                  Kelola data buku tamu yang hanya bisa diakses admin.
+                  Kelola data tamu dan pesan yang tampil di memory wall.
                 </p>
               </div>
-              <button className="btn btn-sm btn-outline" type="button" onClick={onClose} disabled={loading}>
+              <button
+                className="btn btn-sm btn-outline"
+                type="button"
+                onClick={onClose}
+                disabled={loading}
+              >
                 Tutup
               </button>
             </div>
@@ -160,39 +176,42 @@ export function AdminVisitFormDialog({
 
           <div className="grid gap-4 p-5 md:grid-cols-2">
             <label className="form-control w-full">
-              <span className="label text-sm">Nama</span>
+              <span className="label text-sm font-medium">
+                Nama Tamu / Penulis
+              </span>
               <input
                 className="input input-bordered"
+                placeholder="Masukkan nama tamu"
                 value={form.name}
-                onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-                required
-              />
-            </label>
-
-            <label className="form-control w-full">
-              <span className="label text-sm">Asal Instansi</span>
-              <input
-                className="input input-bordered"
-                value={form.institutionOrigin}
                 onChange={(event) =>
-                  setForm((prev) => ({ ...prev, institutionOrigin: event.target.value }))
+                  setForm((prev) => ({ ...prev, name: event.target.value }))
                 }
                 required
               />
             </label>
 
             <label className="form-control w-full">
-              <span className="label text-sm">Nomor Kontak</span>
+              <span className="label text-sm font-medium">
+                Grup / Hubungan (Keluarga, dll)
+              </span>
               <input
                 className="input input-bordered"
-                value={form.phone}
-                onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
+                placeholder="Contoh: Sahabat Kuliah, Keluarga Mempelai Pria"
+                value={form.institutionOrigin}
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    institutionOrigin: event.target.value,
+                  }))
+                }
                 required
               />
             </label>
 
             <label className="form-control w-full">
-              <span className="label text-sm">Kategori Kunjungan</span>
+              <span className="label text-sm font-medium">
+                Kategori Pesan (Ikon)
+              </span>
               <select
                 className="select select-bordered"
                 value={form.purpose}
@@ -212,23 +231,34 @@ export function AdminVisitFormDialog({
             </label>
 
             <label className="form-control w-full md:col-span-2">
-              <span className="label text-sm">Alamat / Keterangan</span>
+              <span className="label text-sm font-medium">
+                Pesan &amp; Doa Restu
+              </span>
               <textarea
-                className="textarea textarea-bordered min-h-28"
+                className="textarea textarea-bordered min-h-28 text-base leading-relaxed"
+                placeholder="Tuliskan ucapan, doa, atau kenangan untuk mempelai..."
                 value={form.address}
-                onChange={(event) => setForm((prev) => ({ ...prev, address: event.target.value }))}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, address: event.target.value }))
+                }
                 required
               />
             </label>
 
             {needsOtherPurpose ? (
               <label className="form-control w-full md:col-span-2">
-                <span className="label text-sm">Detail Kategori Lainnya</span>
+                <span className="label text-sm font-medium">
+                  Detail Kategori Lainnya
+                </span>
                 <input
                   className="input input-bordered"
+                  placeholder="Sebutkan kategori lainnya..."
                   value={form.otherPurposeNote}
                   onChange={(event) =>
-                    setForm((prev) => ({ ...prev, otherPurposeNote: event.target.value }))
+                    setForm((prev) => ({
+                      ...prev,
+                      otherPurposeNote: event.target.value,
+                    }))
                   }
                   required
                 />
@@ -237,7 +267,9 @@ export function AdminVisitFormDialog({
 
             {mode === "create" ? (
               <label className="form-control w-full md:col-span-2">
-                <span className="label text-sm">Foto Kunjungan</span>
+                <span className="label text-sm font-medium">
+                  Foto Bukti Kehadiran / Momen
+                </span>
                 <input
                   className="file-input file-input-bordered w-full"
                   type="file"
@@ -254,14 +286,34 @@ export function AdminVisitFormDialog({
             ) : null}
           </div>
 
-          {error ? <div className="px-5 pb-4 text-sm text-error">{error}</div> : null}
+          {error ? (
+            <div className="px-5 pb-4 text-sm text-error">{error}</div>
+          ) : null}
 
           <div className="flex justify-end gap-2 border-t border-base-300 px-5 py-4">
-            <button className="btn btn-ghost" type="button" onClick={onClose} disabled={loading}>
+            <button
+              className="btn btn-ghost"
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+            >
               Batal
             </button>
-            <button className="btn btn-primary" type="submit" disabled={loading}>
-              {loading ? "Menyimpan..." : mode === "create" ? "Simpan" : "Update"}
+            <button
+              className="btn btn-primary"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className="loading loading-spinner loading-xs"></span>
+                  Menyimpan...
+                </>
+              ) : mode === "create" ? (
+                "Simpan Data"
+              ) : (
+                "Update Data"
+              )}
             </button>
           </div>
         </form>

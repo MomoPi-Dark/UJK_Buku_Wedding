@@ -17,26 +17,53 @@ export async function getDashboardSummary(range: RangePreset = "30d") {
   const weekStart = subDays(todayStart, 6);
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  const [totalInRange, totalToday, totalWeek, totalMonth, visitsInRange, latestVisits, purposeCounts] =
-    await Promise.all([
-      prisma.guestVisit.count({ where: { visitAt: { gte: start } } }),
-      prisma.guestVisit.count({ where: { visitAt: { gte: todayStart } } }),
-      prisma.guestVisit.count({ where: { visitAt: { gte: weekStart } } }),
-      prisma.guestVisit.count({ where: { visitAt: { gte: monthStart } } }),
-      prisma.guestVisit.findMany({
-        where: { visitAt: { gte: start } },
-        select: { visitAt: true },
-      }),
-      prisma.guestVisit.findMany({
-        take: 25,
-        orderBy: { visitAt: "desc" },
-      }),
-      prisma.guestVisit.groupBy({
-        by: ["purpose"],
-        where: { visitAt: { gte: start } },
-        _count: { _all: true },
-      }),
-    ]);
+  const [
+    totalInRange,
+    totalToday,
+    totalWeek,
+    totalMonth,
+    visitsInRange,
+    latestVisits,
+    purposeCounts,
+    latestReactionCounts,
+  ] = await Promise.all([
+    prisma.guestVisit.count({ where: { visitAt: { gte: start } } }),
+    prisma.guestVisit.count({ where: { visitAt: { gte: todayStart } } }),
+    prisma.guestVisit.count({ where: { visitAt: { gte: weekStart } } }),
+    prisma.guestVisit.count({ where: { visitAt: { gte: monthStart } } }),
+    prisma.guestVisit.findMany({
+      where: { visitAt: { gte: start } },
+      select: { visitAt: true },
+    }),
+    prisma.guestVisit.findMany({
+      take: 25,
+      orderBy: { visitAt: "desc" },
+    }),
+    prisma.guestVisit.groupBy({
+      by: ["purpose"],
+      where: { visitAt: { gte: start } },
+      _count: { _all: true },
+    }),
+    prisma.guestVisitReaction.groupBy({
+      by: ["guestVisitId", "reactionType"],
+      _count: { _all: true },
+    }),
+  ]);
+
+  const reactionMap = new Map<
+    number,
+    { heart: number; bouquet: number; sparkle: number }
+  >();
+
+  for (const reaction of latestReactionCounts) {
+    const current = reactionMap.get(reaction.guestVisitId) ?? {
+      heart: 0,
+      bouquet: 0,
+      sparkle: 0,
+    };
+    current[reaction.reactionType] = reaction._count._all;
+    reactionMap.set(reaction.guestVisitId, current);
+  }
 
   const chartMap = new Map<string, number>();
   for (let i = 0; i < RANGE_DAYS[range]; i += 1) {
@@ -50,7 +77,10 @@ export async function getDashboardSummary(range: RangePreset = "30d") {
     chartMap.set(key, (chartMap.get(key) ?? 0) + 1);
   }
 
-  const chart = Array.from(chartMap.entries()).map(([date, total]) => ({ date, total }));
+  const chart = Array.from(chartMap.entries()).map(([date, total]) => ({
+    date,
+    total,
+  }));
   const purpose = purposeCounts.map((entry) => ({
     purpose: entry.purpose,
     total: entry._count._all,
@@ -65,7 +95,14 @@ export async function getDashboardSummary(range: RangePreset = "30d") {
     },
     chart,
     purpose,
-    latestVisits,
+    latestVisits: latestVisits.map((visit) => ({
+      ...visit,
+      reactions: reactionMap.get(visit.id) ?? {
+        heart: 0,
+        bouquet: 0,
+        sparkle: 0,
+      },
+    })),
   };
 }
 
@@ -85,13 +122,13 @@ export function parseRange(input: string | null): RangePreset {
 
 export function isVisitPurpose(value: string): value is VisitPurpose {
   return [
-    "OBSERVASI_PPL_WAWANCARA",
-    "PENAWARAN",
-    "MENGANTAR_SURAT_PERANTARA",
-    "INFORMASI_PMB",
-    "LEGALISIR",
-    "KONSULTASI_PENDIDIKAN",
-    "PENJENGUKAN_SANTRI_SANTRIWATI",
-    "LAYANAN_LAINNYA",
+    "DOA_RESTU",
+    "UCAPAN_BAHAGIA",
+    "CERITA_KENANGAN",
+    "NASIHAT_PERNIKAHAN",
+    "DOA_KELUARGA",
+    "HARAPAN_MASA_DEPAN",
+    "SALAM_KEHADIRAN",
+    "UCAPAN_LAINNYA",
   ].includes(value);
 }

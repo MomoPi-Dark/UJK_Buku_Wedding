@@ -61,10 +61,11 @@ export async function POST(request: Request) {
         name: payload.name,
         institutionOrigin: payload.institutionOrigin,
         address: payload.address,
-        phone: sanitizePhone(payload.phone),
         purpose: payload.purpose as VisitPurpose,
         otherPurposeNote:
-          payload.purpose === "LAYANAN_LAINNYA" ? (payload.otherPurposeNote?.trim() ?? null) : null,
+          payload.purpose === "UCAPAN_LAINNYA"
+            ? (payload.otherPurposeNote?.trim() ?? null)
+            : null,
         photoFileId: uploaded.fileId,
         photoFileName: uploaded.fileName,
         photoFolderPath: uploaded.folderPath,
@@ -83,7 +84,8 @@ export async function POST(request: Request) {
       data: created,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Gagal menyimpan data kunjungan";
+    const message =
+      error instanceof Error ? error.message : "Gagal menyimpan data kunjungan";
     return NextResponse.json(
       {
         ok: false,

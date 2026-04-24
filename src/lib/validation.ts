@@ -7,18 +7,18 @@ const baseGuestVisitSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, "Nama tamu wajib diisi")
+    .min(2, "Nama tamu / penulis wajib diisi")
     .max(120, "Nama tamu terlalu panjang"),
   institutionOrigin: z
     .string()
     .trim()
-    .min(2, "Hubungan dengan mempelai wajib diisi")
-    .max(160, "Hubungan dengan mempelai terlalu panjang"),
+    .min(2, "Grup / Hubungan wajib diisi")
+    .max(160, "Grup / Hubungan terlalu panjang"),
   address: z
     .string()
     .trim()
-    .min(5, "Love note wajib diisi")
-    .max(300, "Love note terlalu panjang"),
+    .min(5, "Pesan & Doa Restu wajib diisi")
+    .max(300, "Pesan & Doa Restu terlalu panjang"),
   purpose: z.enum(VISIT_PURPOSE_VALUES),
   otherPurposeNote: z
     .string()
@@ -28,7 +28,7 @@ const baseGuestVisitSchema = z.object({
     .or(z.literal("")),
 });
 
-const photoSchema = z.object({
+export const guestVisitPhotoSchema = z.object({
   photoBase64: z.string().trim().min(1, "Foto kenangan wajib diunggah"),
   photoMimeType: z
     .string()
@@ -53,17 +53,17 @@ function validateOtherPurpose(
   data: z.infer<typeof baseGuestVisitSchema>,
   ctx: z.RefinementCtx,
 ) {
-  if (data.purpose === "LAYANAN_LAINNYA" && !data.otherPurposeNote?.trim()) {
+  if (data.purpose === "UCAPAN_LAINNYA" && !data.otherPurposeNote?.trim()) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "Detail ucapan wajib diisi untuk kategori Ucapan Lainnya",
+      message: "Detail kategori lainnya wajib diisi",
       path: ["otherPurposeNote"],
     });
   }
 }
 
 export const guestVisitInputSchema = baseGuestVisitSchema
-  .extend(photoSchema.shape)
+  .extend(guestVisitPhotoSchema.shape)
   .superRefine((data, ctx) => {
     validateOtherPurpose(data, ctx);
   });
@@ -77,7 +77,3 @@ export const adminVisitUpdateSchema = baseGuestVisitSchema.superRefine(
 );
 
 export type AdminVisitUpdateInput = z.infer<typeof adminVisitUpdateSchema>;
-
-export function sanitizePhone(phone: string): string {
-  return phone.replace(/\s+/g, " ").trim();
-}

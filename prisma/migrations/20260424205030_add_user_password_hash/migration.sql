@@ -1,19 +1,5 @@
--- CreateTable
-CREATE TABLE `user` (
-    `id` VARCHAR(191) NOT NULL,
-    `name` TEXT NOT NULL,
-    `email` VARCHAR(191) NOT NULL,
-    `emailVerified` BOOLEAN NOT NULL DEFAULT false,
-    `image` TEXT NULL,
-    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updatedAt` DATETIME(3) NOT NULL,
-    `username` VARCHAR(191) NULL,
-    `displayUsername` TEXT NULL,
-
-    UNIQUE INDEX `user_email_key`(`email`),
-    UNIQUE INDEX `user_username_key`(`username`),
-    PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- AlterTable
+ALTER TABLE `user` ADD COLUMN `passwordHash` VARCHAR(191) NOT NULL DEFAULT '';
 
 -- CreateTable
 CREATE TABLE `session` (
@@ -26,8 +12,8 @@ CREATE TABLE `session` (
     `userAgent` TEXT NULL,
     `userId` VARCHAR(191) NOT NULL,
 
+    INDEX `session_userId_idx`(`userId`(191)),
     UNIQUE INDEX `session_token_key`(`token`),
-    INDEX `session_userId_idx`(`userId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -47,7 +33,7 @@ CREATE TABLE `account` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    INDEX `account_userId_idx`(`userId`),
+    INDEX `account_userId_idx`(`userId`(191)),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
