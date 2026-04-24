@@ -1,10 +1,10 @@
-# Sistem Buku Tamu Wedding
+# Sistem Buku Tamu Wedding (EverAfter Notes)
 
 ## Identitas Mahasiswa
 
-- Nama: `Muhammad Iqbal Afnan`
-- NIM: `220103099`
-- Kelas: `TI22A3`
+- **Nama**: `Muhammad Iqbal Afnan`
+- **NIM**: `220103099`
+- **Kelas**: `TI22A3`
 
 ## Deskripsi Tema
 
@@ -14,88 +14,86 @@ Tema ini sengaja dipertahankan agar sesuai instruksi tugas tanpa mengganti kasus
 
 ## Kesesuaian Dengan Instruksi Tugas
 
-### 1. Analisis dan desain kasus
+### 1. Analisis dan Desain Kasus
 
 - Tema kasus: **Wedding Digital Guestbook / Buku Tamu Wedding**
 - Aktor sistem:
-  - `Admin`: login dan mengelola data buku tamu
-  - `Tamu`: mengirim love note atau data kunjungan dari halaman publik
+  - `Admin`: Melakukan login dan mengelola data buku tamu dari dashboard.
+  - `Tamu`: Mengirim _love note_ atau data kunjungan dari halaman publik.
 - Alur utama:
-  - Tamu mengisi form buku tamu di halaman utama
-  - Data tersimpan ke database
-  - Admin login ke sistem
-  - Admin melakukan CRUD data kunjungan dari dashboard
+  - Tamu mengisi form buku tamu di halaman utama.
+  - Data tersimpan ke database dan langsung tampil di _memory wall_.
+  - Admin login ke sistem.
+  - Admin melakukan CRUD (Create, Read, Update, Delete) data kunjungan dari dashboard.
 
-### 2. Desain database
+### 2. Desain Database
 
 Minimal instruksi meminta 2 tabel, dan proyek ini sudah memenuhi itu:
 
-- `user`: tabel pengguna untuk autentikasi login
-- `guest_visits`: tabel bisnis utama untuk data buku tamu wedding
+- `user`: Tabel pengguna untuk autentikasi login.
+- `guest_visits`: Tabel bisnis utama untuk data buku tamu wedding.
 
 Tabel pendukung autentikasi yang juga digunakan:
 
-- `session`
-- `account`
-- `verification`
+- `session`, `account`, `verification` (Tabel bawaan Better Auth).
 
 Tabel tambahan fitur interaksi:
 
-- `guest_visit_reactions`
+- `guest_visit_reactions`: Menyimpan data reaksi pada _love notes_.
 
-### 3. Fitur autentikasi login
+### 3. Fitur Autentikasi Login
 
 - Halaman login tersedia di `/admin/login`
-- Sistem autentikasi menggunakan **session-based authentication** melalui Better Auth
+- Sistem autentikasi menggunakan **session-based authentication** melalui Better Auth.
 - Password disimpan dalam bentuk terenkripsi / ter-hash oleh Better Auth
-- Halaman dan API admin diproteksi menggunakan session cookie
+- Halaman dan rute API admin diproteksi menggunakan session cookie.
 
-### 4. CRUD tabel bisnis
+### 4. CRUD Tabel Bisnis
 
 CRUD diterapkan pada tabel bisnis `guest_visits`:
 
-- `Create`: tambah data kunjungan
-- `Read`: tampilkan daftar data kunjungan
-- `Update`: ubah data kunjungan
-- `Delete`: hapus data kunjungan
+- `Create`: Tambah data kunjungan.
+- `Read`: Tampilkan daftar data kunjungan di dashboard.
+- `Update`: Ubah data kunjungan.
+- `Delete`: Hapus data kunjungan.
 
-Semua proses CRUD admin hanya bisa diakses setelah login.
+_Catatan: Semua proses CRUD admin hanya bisa diakses setelah login berhasil._
 
-### 5. UI dan framework
+### 5. UI dan Framework
 
 - Frontend: **Next.js + React**
 - Backend API: **Next.js Route Handlers**
 - ORM: **Prisma**
 - Database: **MySQL**
-- UI: komponen native React + utility CSS + DaisyUI
+- UI: Komponen native React + Tailwind CSS + DaisyUI
 
-## Fitur Utama
+## ✨ Fitur Utama
 
-- Login admin menggunakan Better Auth.
-- Session-based authentication untuk melindungi halaman admin.
-- Password terenkripsi.
-- CRUD data pada tabel bisnis `guest_visits`.
-- Prisma ORM + MySQL untuk pengelolaan database.
-- Reaction system pada memory wall yang tersimpan di database.
+- 🔐 **Autentikasi Aman**: Login admin menggunakan session-based authentication dengan Better Auth (password terenkripsi).
+- 📊 **Dashboard Admin**: Pengelolaan penuh (CRUD) data kunjungan pada tabel bisnis `guest_visits`.
+- 🚀 **Tech Stack Modern**: Menggunakan Next.js App Router, Prisma ORM, dan MySQL.
+- 💖 **Memory Wall & Reaksi**: Tamu dapat melihat ucapan secara _real-time_ dan memberikan reaksi pada _love notes_.
+- 🎨 **UI Menarik**: Antarmuka responsif dan cantik dengan Tailwind CSS & DaisyUI.
 
-## Struktur Tabel
+## 🗺️ Struktur Halaman (Routing)
 
-- `user`: tabel pengguna untuk autentikasi login.
-- `account`, `session`, `verification`: tabel pendukung Better Auth.
-- `guest_visits`: tabel bisnis untuk data buku tamu.
-- `guest_visit_reactions`: tabel reaksi untuk memory wall.
+- `/` : Halaman publik buku tamu wedding (Form & Memory Wall).
+- `/admin/login` : Halaman login admin.
+- `/admin` : Redirect otomatis ke dashboard admin setelah login.
+- `/admin/dashboard/overview` : Dashboard admin untuk kelola data buku tamu.
+- `/admin/dashboard/users` : Halaman CRUD akun admin tambahan.
 
-## Halaman Aplikasi
+## 🚀 Menjalankan Project
 
-- `/`: halaman publik buku tamu wedding.
-- `/admin/login`: halaman login admin.
-- `/admin`: redirect ke dashboard admin setelah login.
-- `/admin/dashboard/overview`: dashboard admin.
-- `/admin/dashboard/users`: CRUD akun admin.
+### Prasyarat
 
-## Menjalankan Project
+- Node.js (versi 18+)
+- PNPM package manager
+- MySQL Database yang berjalan
 
-1. Install dependency:
+### Langkah-langkah
+
+1. **Install dependency**:
 
 ```bash
 pnpm install
