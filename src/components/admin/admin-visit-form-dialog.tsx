@@ -7,7 +7,7 @@ import { MAX_IMAGE_SIZE_BYTES, adminVisitUpdateSchema } from "@/lib/validation";
 type VisitFormValue = {
   id?: number;
   name: string;
-  institutionOrigin: string;
+  relation: string;
   address: string;
   purpose: (typeof VISIT_PURPOSE_OPTIONS)[number]["value"];
   otherPurposeNote: string;
@@ -30,7 +30,7 @@ type CreatePhotoState = {
 
 const EMPTY_FORM: VisitFormValue = {
   name: "",
-  institutionOrigin: "",
+  relation: "",
   address: "",
   purpose: "DOA_RESTU",
   otherPurposeNote: "",
@@ -197,11 +197,11 @@ export function AdminVisitFormDialog({
               <input
                 className="input input-bordered"
                 placeholder="Contoh: Sahabat Kuliah, Keluarga Mempelai Pria"
-                value={form.institutionOrigin}
+                value={form.relation}
                 onChange={(event) =>
                   setForm((prev) => ({
                     ...prev,
-                    institutionOrigin: event.target.value,
+                    relation: event.target.value,
                   }))
                 }
                 required

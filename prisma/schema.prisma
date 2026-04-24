@@ -27,7 +27,7 @@ enum GuestReactionType {
 model GuestVisit {
   id                Int          @id @default(autoincrement())
   name              String       @db.VarChar(120)
-  institutionOrigin String       @db.VarChar(160)
+  relation String       @db.VarChar(160)
   address           String       @db.VarChar(300)
   purpose           VisitPurpose
   otherPurposeNote  String?      @db.VarChar(255)

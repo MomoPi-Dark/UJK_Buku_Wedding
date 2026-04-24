@@ -35,7 +35,7 @@ type DashboardData = {
   latestVisits: Array<{
     id: number;
     name: string;
-    institutionOrigin: string;
+    relation: string;
     address: string;
     purpose: VisitPurposeValue;
     otherPurposeNote: string | null;
@@ -61,6 +61,8 @@ const PIE_COLORS = [
   "#7D6BE8",
   "#46B3C6",
 ];
+
+const ACTION_MESSAGE_DURATION_MS = 5000; // Hilang otomatis dalam 5 detik
 
 export function AdminOverviewDashboard() {
   const [range, setRange] =
@@ -163,6 +165,20 @@ export function AdminOverviewDashboard() {
     };
   }, [selectedPhoto]);
 
+  useEffect(() => {
+    if (!actionMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setActionMessage(null);
+    }, ACTION_MESSAGE_DURATION_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [actionMessage]);
+
   async function handleDeleteVisit(
     visit: DashboardData["latestVisits"][number],
   ) {
@@ -213,8 +229,26 @@ export function AdminOverviewDashboard() {
   }
 
   return (
-    <AdminDashboardShell activeSection="overview">
-      {loading ? <div className="skeleton h-96 w-full rounded-box" /> : null}
+    <AdminDashboardShell
+      activeSection="overview"
+      rightAction={
+        <div className="join">
+          {RANGE_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              className={`btn join-item btn-sm ${range === option.value ? "btn-primary" : "btn-outline"}`}
+              onClick={() => setRange(option.value)}
+              disabled={loading}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      }
+    >
+      {loading && !data ? (
+        <div className="skeleton h-96 w-full rounded-box" />
+      ) : null}
 
       {error && !loading ? (
         <div className="alert alert-error">{error}</div>
@@ -228,7 +262,7 @@ export function AdminOverviewDashboard() {
         </div>
       ) : null}
 
-      {data && !loading ? (
+      {data ? (
         <AnimatePresence mode="wait">
           <motion.div
             key={range}
@@ -240,7 +274,7 @@ export function AdminOverviewDashboard() {
           >
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               <StatCard
-                label={`Love Notes ${range}`}
+                label={`Total Ucapan (${RANGE_OPTIONS.find((opt) => opt.value === range)?.label})`}
                 value={data.totals.range}
               />
               <StatCard label="Hari Ini" value={data.totals.today} />
@@ -252,7 +286,7 @@ export function AdminOverviewDashboard() {
               <div className="card bg-base-100 shadow-sm">
                 <div className="card-body">
                   <h2 className="card-title text-lg text-primary">
-                    Tren Love Notes Harian
+                    Tren Ucapan & Doa Harian
                   </h2>
                   <div className="h-64 md:h-72">
                     <ResponsiveContainer width="100%" height="100%">
@@ -335,7 +369,7 @@ export function AdminOverviewDashboard() {
                           <td className="max-w-sm whitespace-normal text-xs opacity-80">
                             {visit.address}
                           </td>
-                          <td>{visit.institutionOrigin}</td>
+                          <td>{visit.relation}</td>
                           <td>
                             <div>{getPurposeLabel(visit.purpose)}</div>
                             {visit.otherPurposeNote ? (
@@ -498,7 +532,7 @@ export function AdminOverviewDashboard() {
               ? {
                   id: editingVisit.id,
                   name: editingVisit.name,
-                  institutionOrigin: editingVisit.institutionOrigin,
+                  relation: editingVisit.relation,
                   address: editingVisit.address,
                   purpose: editingVisit.purpose,
                   otherPurposeNote: editingVisit.otherPurposeNote ?? "",
@@ -533,7 +567,7 @@ function toWallMessage(
     id: visit.id,
     author: visit.name,
     message: visit.address,
-    origin: visit.institutionOrigin,
+    origin: visit.relation,
     category: getPurposeLabel(visit.purpose),
     visitAt: visit.visitAt,
     highlighted: index === 0,

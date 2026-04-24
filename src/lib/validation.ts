@@ -9,7 +9,7 @@ const baseGuestVisitSchema = z.object({
     .trim()
     .min(2, "Nama tamu / penulis wajib diisi")
     .max(120, "Nama tamu terlalu panjang"),
-  institutionOrigin: z
+  relation: z
     .string()
     .trim()
     .min(2, "Grup / Hubungan wajib diisi")

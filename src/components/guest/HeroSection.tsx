@@ -15,7 +15,7 @@ const WEDDING_DATE =
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-primary/15 bg-[linear-gradient(140deg,rgba(255,252,249,0.92),rgba(255,244,240,0.78),rgba(248,239,230,0.9))] px-5 py-6 shadow-[0_30px_80px_rgba(94,63,75,0.12)] backdrop-blur md:px-8 md:py-10">
+    <section className="relative overflow-hidden rounded-4xl border border-primary/15 bg-[linear-gradient(140deg,rgba(255,252,249,0.92),rgba(255,244,240,0.78),rgba(248,239,230,0.9))] px-5 py-6 shadow-[0_30px_80px_rgba(94,63,75,0.12)] backdrop-blur md:px-8 md:py-10">
       <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[40%] bg-[radial-gradient(circle_at_center,rgba(208,171,135,0.18),transparent_68%)] lg:block" />
       <div className="pointer-events-none absolute -left-10 top-6 h-32 w-32 rounded-full bg-secondary/18 blur-3xl" />
       <div className="pointer-events-none absolute bottom-0 right-8 h-28 w-28 rounded-full bg-accent/20 blur-3xl" />

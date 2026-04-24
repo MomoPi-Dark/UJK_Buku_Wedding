@@ -45,7 +45,7 @@ export async function GET(request: Request) {
         id: true,
         name: true,
         address: true,
-        institutionOrigin: true,
+        relation: true,
         purpose: true,
         visitAt: true,
       },
@@ -118,7 +118,7 @@ export async function GET(request: Request) {
       id: visit.id,
       author: visit.name,
       message: visit.address,
-      origin: visit.institutionOrigin,
+      origin: visit.relation,
       category: getPurposeLabel(
         visit.purpose as Parameters<typeof getPurposeLabel>[0],
       ),

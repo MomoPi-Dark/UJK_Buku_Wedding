@@ -67,7 +67,7 @@ export async function PATCH(request: Request, context: Context) {
       where: { id: visitId },
       data: {
         name: payload.name,
-        institutionOrigin: payload.institutionOrigin,
+        relation: payload.relation,
         address: payload.address,
         purpose: payload.purpose as VisitPurpose,
         otherPurposeNote:

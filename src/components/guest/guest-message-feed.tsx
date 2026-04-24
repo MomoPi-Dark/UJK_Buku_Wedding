@@ -43,40 +43,43 @@ export function GuestMessageFeed() {
   >({});
   const [lastUpdated, setLastUpdated] = useState<string>("");
 
-  const loadMessages = useCallback(async (silent = false) => {
-    if (!silent) {
-      setLoading(true);
-    }
-
-    setError(null);
-    try {
-      const query = new URLSearchParams({ limit: "18" });
-      if (reactorId) {
-        query.set("reactorId", reactorId);
-      }
-      const response = await fetch(`/api/wall?${query.toString()}`, {
-        cache: "no-store",
-      });
-      const json = (await response.json()) as FeedResponse;
-
-      if (!response.ok || !json.ok || !json.data) {
-        throw new Error(json.error?.message ?? "Gagal memuat pesan tamu");
-      }
-
-      setMessages(json.data.messages);
-      setLastUpdated(new Date().toISOString());
-    } catch (fetchError) {
-      setError(
-        fetchError instanceof Error
-          ? fetchError.message
-          : "Gagal memuat pesan tamu",
-      );
-    } finally {
+  const loadMessages = useCallback(
+    async (silent = false) => {
       if (!silent) {
-        setLoading(false);
+        setLoading(true);
       }
-    }
-  }, [reactorId]);
+
+      setError(null);
+      try {
+        const query = new URLSearchParams({ limit: "18" });
+        if (reactorId) {
+          query.set("reactorId", reactorId);
+        }
+        const response = await fetch(`/api/wall?${query.toString()}`, {
+          cache: "no-store",
+        });
+        const json = (await response.json()) as FeedResponse;
+
+        if (!response.ok || !json.ok || !json.data) {
+          throw new Error(json.error?.message ?? "Gagal memuat pesan tamu");
+        }
+
+        setMessages(json.data.messages);
+        setLastUpdated(new Date().toISOString());
+      } catch (fetchError) {
+        setError(
+          fetchError instanceof Error
+            ? fetchError.message
+            : "Gagal memuat pesan tamu",
+        );
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [reactorId],
+  );
 
   useEffect(() => {
     const stored =
@@ -189,7 +192,7 @@ export function GuestMessageFeed() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-semibold text-primary">
-            Love Notes Wall
+            Dinding Catatan Harapan
           </h2>
           <p className="text-sm opacity-75">
             Setiap ucapan tampil sebagai memori hidup dari hari bahagia
@@ -212,8 +215,7 @@ export function GuestMessageFeed() {
 
       {!loading && !error && messages.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-primary/20 p-6 text-center text-sm opacity-75">
-          Belum ada love note. Jadilah tamu pertama yang meninggalkan doa
-          terbaik.
+          Belum ada surat. Jadilah tamu pertama yang meninggalkan doa terbaik.
         </div>
       ) : null}
 
@@ -234,7 +236,7 @@ export function GuestMessageFeed() {
         <AnimatePresence mode="popLayout">
           <motion.div
             layout
-            className="grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+            className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 items-start auto-rows-fr"
           >
             {regularMessages.map((item) => (
               <MessageCard

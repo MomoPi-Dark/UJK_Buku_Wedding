@@ -9,7 +9,7 @@ type SubmitState = "idle" | "loading" | "success" | "error";
 
 type FormDataState = {
   name: string;
-  institutionOrigin: string;
+  relation: string;
   address: string;
   purpose: (typeof VISIT_PURPOSE_OPTIONS)[number]["value"];
   otherPurposeNote: string;
@@ -33,7 +33,7 @@ const QUICK_PURPOSE: Array<{ label: string; value: FormDataState["purpose"] }> =
 
 const DEFAULT_STATE: FormDataState = {
   name: "",
-  institutionOrigin: "Sahabat Mempelai",
+  relation: "Sahabat Mempelai",
   address: "",
   purpose: "DOA_RESTU",
   otherPurposeNote: "",
@@ -56,11 +56,6 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
     () => form.purpose === "UCAPAN_LAINNYA",
     [form.purpose],
   );
-  const formValidation = useMemo(
-    () => guestVisitInputSchema.safeParse(form),
-    [form],
-  );
-  const isReadyToSubmit = formValidation.success;
 
   function resetFileInputs() {
     if (cameraInputRef.current) {
@@ -114,10 +109,12 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!formValidation.success) {
+    const validation = guestVisitInputSchema.safeParse(form);
+
+    if (!validation.success) {
       setSubmitState("error");
       setMessage(
-        formValidation.error.issues[0]?.message ?? "Data form tidak valid",
+        validation.error.issues[0]?.message ?? "Data form tidak valid",
       );
       return;
     }
@@ -129,7 +126,7 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
       const response = await fetch("/api/guestbook", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(formValidation.data),
+        body: JSON.stringify(validation.data),
       });
 
       const json = (await response.json()) as {
@@ -141,7 +138,9 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
       }
 
       setSubmitState("success");
-      setMessage("Love note berhasil ditambahkan ke memory wall.");
+      setMessage(
+        "Surat dan doa Anda berhasil dikirim! Terima kasih telah berbagi kebahagiaan.",
+      );
       setForm(DEFAULT_STATE);
       setIsAnonymous(false);
       resetFileInputs();
@@ -172,6 +171,7 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
   return (
     <motion.form
       id="love-note-form"
+      noValidate
       onSubmit={handleSubmit}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -189,22 +189,20 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
                 Write With Love
               </p>
               <h2 className="mt-1 font-heading text-3xl leading-none text-primary">
-                Leave a Wedding Blessing
+                Berikan Ucapan Untuk Mempelai
               </h2>
             </div>
-            <span className="rounded-full border border-primary/15 bg-base-100/75 px-3 py-2 text-[11px] uppercase tracking-[0.22em] text-primary/70">
-              Love Letter
-            </span>
           </div>
           <p className="max-w-xl text-sm leading-6 opacity-80">
-            Write a prayer, a sweet memory, or a warm wish for the bride and
-            groom. Let your words become part of their forever.
+            Tuliskan sebuah doa, kenangan indah, atau ucapan selamat yang hangat
+            untuk pengantin. Biarkan kata-kata Anda menjadi bagian dari kenangan
+            abadi mereka.
           </p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <label className="form-control w-full">
-            <span className="label text-sm text-foreground/78">Your Name</span>
+            <span className="label text-sm text-foreground/78">Nama</span>
             <input
               className="input h-12 w-full rounded-2xl border-primary/12 bg-base-100/88"
               value={form.name}
@@ -213,8 +211,8 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
               }
               placeholder={
                 isAnonymous
-                  ? "Your name is hidden for this note"
-                  : "Example: Salsa, Bridesmaid"
+                  ? "Nama akan disembunyikan sebagai 'Tamu Rahasia'"
+                  : "Contoh: Siti Nurhaliza / Sahabat Dekat / Rekan Kerja"
               }
               readOnly={isAnonymous}
               required
@@ -223,10 +221,10 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
 
           <label className="form-control w-full">
             <span className="label text-sm text-foreground/78">
-              Writing Mode
+              Nama Tamu Rahasia
             </span>
             <div className="flex h-12 items-center justify-between rounded-2xl border border-primary/12 bg-base-100/74 px-4">
-              <span className="text-sm">Anonymous Blessing</span>
+              <span className="text-sm">Anonymous</span>
               <input
                 type="checkbox"
                 className="toggle toggle-primary"
@@ -238,7 +236,7 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
 
           <div className="form-control w-full md:col-span-2">
             <span className="label text-sm text-foreground/78">
-              Blessing Tone
+              Pilih Nuansa Ucapan
             </span>
             <div className="flex flex-wrap gap-2">
               {QUICK_PURPOSE.map((item) => (
@@ -264,30 +262,27 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <div>
                 <p className="text-sm font-semibold text-primary">
-                  A Little About You
+                  Sedikit Tentang Kamu
                 </p>
                 <p className="text-xs opacity-70">
-                  These details help the couple remember the heart behind every
-                  note.
+                  Detail-detail ini membantu pasangan tersebut mengingat makna
+                  di balik setiap catatan.
                 </p>
               </div>
-              <span className="rounded-full border border-secondary/15 bg-secondary/12 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-secondary">
-                Keepsake Details
-              </span>
             </div>
 
             <div className="w-full">
               <label className="form-control w-full">
                 <span className="label text-sm text-foreground/78">
-                  Your Relation to the Couple
+                  Hubungan Anda dengan Pasangan Tersebut
                 </span>
                 <input
                   className="input h-12 w-full rounded-2xl border-primary/12 bg-base-100/88"
-                  value={form.institutionOrigin}
+                  value={form.relation}
                   onChange={(event) =>
                     setForm((prev) => ({
                       ...prev,
-                      institutionOrigin: event.target.value,
+                      relation: event.target.value,
                     }))
                   }
                   placeholder="Example: College friend / Family / Colleague"
@@ -342,16 +337,14 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
 
         <div>
           <label className="form-control w-full">
-            <span className="label text-sm text-foreground/78">
-              Your Love Note
-            </span>
+            <span className="label text-sm text-foreground/78">Surat mu</span>
             <div className="rounded-[1.7rem] border border-primary/12 bg-[linear-gradient(180deg,rgba(255,251,248,0.95),rgba(249,241,235,0.92))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
               <div className="mb-3 flex items-center justify-between">
                 <p className="font-accent text-2xl text-secondary">
                   Dear Alya &amp; Raka,
                 </p>
                 <span className="text-[11px] uppercase tracking-[0.24em] text-primary/55">
-                  heartfelt note
+                  pesan yang tulus
                 </span>
               </div>
               <textarea
@@ -360,11 +353,11 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, address: event.target.value }))
                 }
-                placeholder="May your home be full of tenderness, laughter, and the kind of love that grows more beautiful with time..."
+                placeholder="Semoga rumahmu dipenuhi dengan kehangatan, tawa, dan cinta yang semakin indah seiring berjalannya waktu..."
                 required
               />
               <div className="mt-2 flex items-center justify-between border-t border-primary/10 pt-2 text-xs opacity-75">
-                <span>Write at least a few loving words</span>
+                <span>Tuliskan setidaknya beberapa kata doa dan harapan</span>
                 <span>{form.address.length} karakter</span>
               </div>
             </div>
@@ -454,11 +447,11 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
         <button
           className="btn btn-primary h-13 rounded-full px-6 text-base shadow-sm"
           type="submit"
-          disabled={submitState === "loading" || !isReadyToSubmit}
+          disabled={submitState === "loading"}
         >
           {submitState === "loading"
-            ? "Sending Your Blessing..."
-            : "Send With Love ❤️"}
+            ? "Mengirimkan Ucapan & Doa..."
+            : "Kirimkan Ucapan & Doa"}
         </button>
       </div>
     </motion.form>

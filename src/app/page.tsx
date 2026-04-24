@@ -37,7 +37,7 @@ export default function Home() {
                 <span className="font-accent block text-4xl text-secondary md:text-5xl">
                   {BRIDE_NAME} &amp; {GROOM_NAME}
                 </span>
-                Wedding Wishes &amp; Blessings
+                Ucapan Selamat &amp; Doa untuk Mempelai
               </h1>
               <p className="text-sm font-medium tracking-wide text-primary/80">
                 {WEDDING_DATE}

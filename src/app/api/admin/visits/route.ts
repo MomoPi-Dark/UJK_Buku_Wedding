@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     const created = await prisma.guestVisit.create({
       data: {
         name: payload.name,
-        institutionOrigin: payload.institutionOrigin,
+        relation: payload.relation,
         address: payload.address,
         purpose: payload.purpose as VisitPurpose,
         otherPurposeNote:

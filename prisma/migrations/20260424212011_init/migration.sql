@@ -1,2 +1,0 @@
--- This migration was generated after the indexes already existed in the
--- previous migration. Keep it as a no-op so fresh deploys do not fail.
