@@ -133,7 +133,6 @@ pnpm dev
 
 ## Catatan
 
-- Ganti placeholder identitas mahasiswa sebelum dikumpulkan.
 - Pastikan `BETTER_AUTH_URL` diisi, misalnya `http://localhost:3000`.
 - `ADMIN_SESSION_SECRET` sebaiknya berupa string acak minimal 32 karakter.
 - Akses CRUD admin dilindungi login, sehingga sudah sesuai syarat "halaman CRUD hanya boleh diakses setelah pengguna berhasil login".
