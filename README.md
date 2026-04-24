@@ -2,9 +2,9 @@
 
 ## Identitas Mahasiswa
 
-- Nama: `ISI_NAMA_MAHASISWA`
-- NIM: `ISI_NIM`
-- Kelas: `ISI_KELAS`
+- Nama: `Muhammad Iqbal Afnan`
+- NIM: `220103099`
+- Kelas: `TI22A3`
 
 ## Deskripsi Tema
 
