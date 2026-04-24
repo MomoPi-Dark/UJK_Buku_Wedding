@@ -19,7 +19,7 @@ Tema ini sengaja dipertahankan agar sesuai instruksi tugas tanpa mengganti kasus
 - Tema kasus: **Wedding Digital Guestbook / Buku Tamu Wedding**
 - Aktor sistem:
   - `Admin`: Melakukan login dan mengelola data buku tamu dari dashboard.
-  - `Tamu`: Mengirim _love note_ atau data kunjungan dari halaman publik.
+  - `Tamu`: Mengirim _surat harapan_ atau data kunjungan dari halaman publik.
 - Alur utama:
   - Tamu mengisi form buku tamu di halaman utama.
   - Data tersimpan ke database dan langsung tampil di _memory wall_.
@@ -39,7 +39,7 @@ Tabel pendukung autentikasi yang juga digunakan:
 
 Tabel tambahan fitur interaksi:
 
-- `guest_visit_reactions`: Menyimpan data reaksi pada _love notes_.
+- `guest_visit_reactions`: Menyimpan data reaksi pada _surat harapan_.
 
 ### 3. Fitur Autentikasi Login
 
@@ -72,7 +72,7 @@ _Catatan: Semua proses CRUD admin hanya bisa diakses setelah login berhasil._
 - 🔐 **Autentikasi Aman**: Login admin menggunakan session-based authentication dengan Better Auth (password terenkripsi).
 - 📊 **Dashboard Admin**: Pengelolaan penuh (CRUD) data kunjungan pada tabel bisnis `guest_visits`.
 - 🚀 **Tech Stack Modern**: Menggunakan Next.js App Router, Prisma ORM, dan MySQL.
-- 💖 **Memory Wall & Reaksi**: Tamu dapat melihat ucapan secara _real-time_ dan memberikan reaksi pada _love notes_.
+- 💖 **Memory Wall & Reaksi**: Tamu dapat melihat ucapan secara _real-time_ dan memberikan reaksi pada _surat harapan_.
 - 🎨 **UI Menarik**: Antarmuka responsif dan cantik dengan Tailwind CSS & DaisyUI.
 
 ## 🗺️ Struktur Halaman (Routing)
