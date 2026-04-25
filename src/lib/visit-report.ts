@@ -1,4 +1,4 @@
-import { VisitPurpose } from "@prisma/client";
+import type { VisitPurposeValue } from "@/lib/guestbook";
 import { subDays } from "@/lib/time";
 import { prisma } from "@/lib/prisma";
 
@@ -120,7 +120,7 @@ export function parseRange(input: string | null): RangePreset {
   return "30d";
 }
 
-export function isVisitPurpose(value: string): value is VisitPurpose {
+export function isVisitPurpose(value: string): value is VisitPurposeValue {
   return [
     "DOA_RESTU",
     "UCAPAN_BAHAGIA",

@@ -1,16 +1,27 @@
 services:
   db:
-    image: mariadb:11.4
+    image: mysql:8.4
     restart: unless-stopped
     environment:
-      MARIADB_DATABASE: ${MYSQL_DATABASE:-buku_tamu}
-      MARIADB_USER: ${MYSQL_USER:-buku_tamu}
-      MARIADB_PASSWORD: ${MYSQL_PASSWORD:-please_change_me}
-      MARIADB_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-please_change_root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-buku_tamu}
+      MYSQL_USER: ${MYSQL_USER:-buku_tamu}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-please_change_me}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-please_change_root_password}
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
     healthcheck:
-      test: ["CMD", "mariadb-admin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-please_change_root_password}"]
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "127.0.0.1",
+          "-uroot",
+          "-p${MYSQL_ROOT_PASSWORD:-please_change_root_password}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -18,34 +29,8 @@ services:
     networks:
       - app_net
 
-  app:
-    image: ${APP_IMAGE:-buku_tamu_man2:latest}
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    init: true
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      NODE_ENV: production
-      PORT: 3001
-      DATABASE_URL: ${DATABASE_URL:-mysql://buku_tamu:please_change_me@db:3306/buku_tamu?schema=public}
-      GOOGLE_SCRIPT_UPLOAD_URL: ${GOOGLE_SCRIPT_UPLOAD_URL}
-      GOOGLE_SCRIPT_FILE_PROXY_URL: ${GOOGLE_SCRIPT_FILE_PROXY_URL}
-      GOOGLE_SCRIPT_TOKEN: ${GOOGLE_SCRIPT_TOKEN}
-      ADMIN_USERNAME: ${ADMIN_USERNAME}
-      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH}
-      ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET}
-    ports:
-      - "${APP_PORT:-3001}:3001"
-    command: ["sh", "-c", "pnpm prisma migrate deploy && pnpm start --hostname 0.0.0.0 --port 3001"]
-    networks:
-      - app_net
-
 volumes:
-  mariadb_data:
+  mysql_data:
 
 networks:
   app_net:

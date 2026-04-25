@@ -104,6 +104,21 @@ CREATE TABLE `verification` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- CreateTable
+CREATE TABLE `management_undangan` (
+    `id` VARCHAR(191) NOT NULL,
+    `fileId` VARCHAR(191) NOT NULL,
+    `fileName` VARCHAR(191) NOT NULL,
+    `folderPath` VARCHAR(191) NOT NULL,
+    `mimeType` VARCHAR(100) NOT NULL,
+    `sizeBytes` INTEGER NOT NULL,
+    `uploadedAt` DATETIME(3) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- AddForeignKey
 ALTER TABLE `guest_visit_reactions` ADD CONSTRAINT `guest_visit_reactions_guestVisitId_fkey` FOREIGN KEY (`guestVisitId`) REFERENCES `guest_visits`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 

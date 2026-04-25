@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 
 const reactionTypeSchema = z.enum(["heart", "bouquet", "sparkle"]);
+type ReactionType = z.infer<typeof reactionTypeSchema>;
 
 const reactionPayloadSchema = z.object({
   messageId: z.number().int().positive(),
@@ -15,7 +16,7 @@ function emptyReactionTotals() {
     heart: 0,
     bouquet: 0,
     sparkle: 0,
-  };
+  } satisfies Record<ReactionType, number>;
 }
 
 async function getReactionSnapshot(messageId: number, reactorId: string) {
@@ -42,16 +43,16 @@ async function getReactionSnapshot(messageId: number, reactorId: string) {
 
   const reactions = emptyReactionTotals();
   for (const item of totals) {
-    reactions[item.reactionType] = item._count._all;
+    reactions[item.reactionType as ReactionType] = item._count._all;
   }
 
-  const viewerReactions = {
+  const viewerReactions: Record<ReactionType, boolean> = {
     heart: false,
     bouquet: false,
     sparkle: false,
   };
   for (const item of activeRows) {
-    viewerReactions[item.reactionType] = true;
+    viewerReactions[item.reactionType as ReactionType] = true;
   }
 
   return { reactions, viewerReactions };

@@ -44,11 +44,18 @@ export async function GET() {
     return NextResponse.json({
       ok: true,
       data: {
-        users: users.map((user) => ({
+        users: users.map(
+          (user: {
+            id: string;
+            name: string | null;
+            email: string;
+            createdAt: Date;
+          }) => ({
           ...user,
           username: user.email.split("@")[0] ?? user.email,
           isDefaultAdmin: isDefaultAdminEmail(user.email),
-        })),
+          }),
+        ),
       },
     });
   } catch (error) {

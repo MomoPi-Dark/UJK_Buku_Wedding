@@ -129,3 +129,18 @@ model Verification {
   @@index([identifier(length: 191)])
   @@map("verification")
 }
+
+
+model ManagementUndangan {
+  id String @id
+  fileId String @db.VarChar(191)
+  fileName String @db.VarChar(191)
+  folderPath String @db.VarChar(191)
+  mimeType String @db.VarChar(100)
+  sizeBytes Int
+  uploadedAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("management_undangan")
+}

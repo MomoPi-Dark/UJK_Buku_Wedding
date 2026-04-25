@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 type AdminDashboardShellProps = {
-  activeSection: "overview" | "users";
+  activeSection: "overview" | "users" | "undangan";
   rightAction?: ReactNode;
   children: ReactNode;
 };
@@ -30,6 +30,12 @@ export function AdminDashboardShell({
             className={`btn justify-start ${activeSection === "users" ? "btn-primary" : "btn-ghost"}`}
           >
             Users
+          </Link>
+          <Link
+            href="/admin/dashboard/undangan"
+            className={`btn justify-start ${activeSection === "undangan" ? "btn-primary" : "btn-ghost"}`}
+          >
+            Undangan
           </Link>
         </div>
       </aside>

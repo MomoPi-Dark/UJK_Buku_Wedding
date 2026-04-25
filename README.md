@@ -83,6 +83,48 @@ _Catatan: Semua proses CRUD admin hanya bisa diakses setelah login berhasil._
 - `/admin/dashboard/overview` : Dashboard admin untuk kelola data buku tamu.
 - `/admin/dashboard/users` : Halaman CRUD akun admin tambahan.
 
+## Pemenuhan Soal Tambahan (Project Mandiri)
+
+Sesuai instruksi:
+
+```text
+Gunakan project mandiri yang sudah dikerjakan sebelumnya.
+Silahkan buat 1 tabel tambahan di dalam database Anda.
+Silahkan buat CRUD.
+Push (update) ke github untuk hasil pekerjaan.
+```
+
+### 1. Tabel tambahan yang dibuat
+
+- Tabel: `management_undangan`
+- Definisi model Prisma: `ManagementUndangan` di `prisma/schema.prisma`
+- Kolom utama: `id`, `fileId`, `fileName`, `folderPath`, `mimeType`, `sizeBytes`, `uploadedAt`, `createdAt`, `updatedAt`
+
+### 2. CRUD yang dibuat
+
+- API List + Create:
+  - `GET /api/admin/management-undangan`
+  - `POST /api/admin/management-undangan`
+  - File: `src/app/api/admin/management-undangan/route.ts`
+- API Update + Delete:
+  - `PATCH /api/admin/management-undangan/[id]`
+  - `DELETE /api/admin/management-undangan/[id]`
+  - File: `src/app/api/admin/management-undangan/[id]/route.ts`
+- UI Dashboard CRUD:
+  - Halaman: `/admin/dashboard/undangan`
+  - Files:
+    - `src/app/admin/dashboard/undangan/page.tsx`
+    - `src/components/admin/admin-undangan-dashboard.tsx`
+    - `src/components/admin/admin-undangan-form-dialog.tsx`
+
+### 3. Integrasi dari upload tamu
+
+- Data `management_undangan` otomatis terisi saat tamu mengirim gambar dari form publik (`/`).
+- Sinkronisasi dilakukan di:
+  - `src/app/api/guestbook/route.ts`
+  - `src/lib/management-undangan.ts`
+
+
 ## 🚀 Menjalankan Project
 
 ### Prasyarat

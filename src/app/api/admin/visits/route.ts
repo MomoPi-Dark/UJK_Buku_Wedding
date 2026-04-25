@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { VisitPurpose } from "@prisma/client/index-browser";
 import { getAdminSession } from "@/lib/auth";
 import { getPurposeLabel } from "@/lib/guestbook";
 import { mimeTypeToExtension, uploadVisitPhoto } from "@/lib/google-script";
+import { saveManagementUndanganFromUpload } from "@/lib/management-undangan";
 import { prisma } from "@/lib/prisma";
-import { guestVisitInputSchema, sanitizePhone } from "@/lib/validation";
+import { guestVisitInputSchema } from "@/lib/validation";
 
 export async function POST(request: Request) {
   const session = await getAdminSession();
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
         name: payload.name,
         relation: payload.relation,
         address: payload.address,
-        purpose: payload.purpose as VisitPurpose,
+        purpose: payload.purpose,
         otherPurposeNote:
           payload.purpose === "UCAPAN_LAINNYA"
             ? (payload.otherPurposeNote?.trim() ?? null)
@@ -77,6 +77,15 @@ export async function POST(request: Request) {
         id: true,
         visitAt: true,
       },
+    });
+
+    await saveManagementUndanganFromUpload({
+      fileId: uploaded.fileId,
+      fileName: uploaded.fileName,
+      folderPath: uploaded.folderPath,
+      mimeType: payload.photoMimeType,
+      sizeBytes: payload.photoSizeBytes,
+      uploadedAt: uploaded.uploadedAt,
     });
 
     return NextResponse.json({

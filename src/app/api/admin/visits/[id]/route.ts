@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { VisitPurpose } from "@prisma/client/index-browser";
 import { getAdminSession } from "@/lib/auth";
 import { deleteVisitPhoto } from "@/lib/google-script";
 import { prisma } from "@/lib/prisma";
-import { adminVisitUpdateSchema, sanitizePhone } from "@/lib/validation";
+import { adminVisitUpdateSchema } from "@/lib/validation";
 
 type Context = {
   params: Promise<{ id: string }>;
@@ -69,7 +68,7 @@ export async function PATCH(request: Request, context: Context) {
         name: payload.name,
         relation: payload.relation,
         address: payload.address,
-        purpose: payload.purpose as VisitPurpose,
+        purpose: payload.purpose,
         otherPurposeNote:
           payload.purpose === "UCAPAN_LAINNYA"
             ? (payload.otherPurposeNote?.trim() ?? null)
