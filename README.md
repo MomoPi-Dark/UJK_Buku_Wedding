@@ -10,8 +10,6 @@
 
 Tema studi kasus pada proyek ini adalah **Sistem Buku Tamu Wedding**. Aplikasi digunakan untuk mencatat data kunjungan tamu wedding secara terstruktur, lengkap dengan autentikasi login admin dan fitur CRUD untuk mengelola data kunjungan.
 
-Tema ini sengaja dipertahankan agar sesuai instruksi tugas tanpa mengganti kasus aplikasi yang sudah berjalan.
-
 ## Kesesuaian Dengan Instruksi Tugas
 
 ### 1. Analisis dan Desain Kasus

@@ -4,6 +4,7 @@ import { FormEvent, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { VISIT_PURPOSE_OPTIONS } from "@/lib/guestbook";
 import { guestVisitInputSchema, guestVisitPhotoSchema } from "@/lib/validation";
+import { getBrideName, getGroomName } from "@/lib/env";
 
 type SubmitState = "idle" | "loading" | "success" | "error";
 
@@ -340,8 +341,11 @@ export function GuestbookForm({ onPosted }: GuestbookFormProps) {
             <span className="label text-sm text-foreground/78">Surat mu</span>
             <div className="rounded-[1.7rem] border border-primary/12 bg-[linear-gradient(180deg,rgba(255,251,248,0.95),rgba(249,241,235,0.92))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
               <div className="mb-3 flex items-center justify-between">
-                <p className="font-accent text-2xl text-secondary">
-                  Dear Alya &amp; Raka,
+                <p
+                  className="font-accent text-2xl text-secondary"
+                  suppressHydrationWarning
+                >
+                  {`Dear ${getBrideName()} & ${getGroomName()},`}
                 </p>
                 <span className="text-[11px] uppercase tracking-[0.24em] text-primary/55">
                   pesan yang tulus

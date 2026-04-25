@@ -67,3 +67,17 @@ export function getBetterAuthSecret(): string {
 export function getBetterAuthUrl(): string | undefined {
   return getOptional("BETTER_AUTH_URL");
 }
+
+export function getGroomName(): string {
+  return getOptional("NEXT_PUBLIC_GROOM_NAME") || "Ahmad";
+}
+
+export function getBrideName(): string {
+  return getOptional("NEXT_PUBLIC_BRIDE_NAME") || "Alya";
+}
+
+export function getWeddingDate(): string {
+  return (
+    getOptional("NEXT_PUBLIC_WEDDING_DATE") || "Sabtu, 21 Juni 2026 • Jakarta"
+  );
+}

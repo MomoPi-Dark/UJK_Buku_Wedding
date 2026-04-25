@@ -1,10 +1,10 @@
+import { getBrideName, getGroomName, getWeddingDate } from "@/lib/env";
 import { GuestMessageFeed } from "../components/guest/guest-message-feed";
 import { GuestbookForm } from "@/components/guest/guestbook-form";
 
-const BRIDE_NAME = process.env.NEXT_PUBLIC_BRIDE_NAME || "Alya";
-const GROOM_NAME = process.env.NEXT_PUBLIC_GROOM_NAME || "Raka";
-const WEDDING_DATE =
-  process.env.NEXT_PUBLIC_WEDDING_DATE || "Sabtu, 21 Juni 2026 • Jakarta";
+const BRIDE_NAME = getBrideName();
+const GROOM_NAME = getGroomName();
+const WEDDING_DATE = getWeddingDate();
 
 export default function Home() {
   return (
