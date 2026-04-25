@@ -36,6 +36,10 @@ export function AdminUndanganDashboard() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [selectedPreview, setSelectedPreview] = useState<{
+    id: string;
+    fileName: string;
+  } | null>(null);
 
   const loadItems = useCallback(async () => {
     setLoading(true);
@@ -153,19 +157,19 @@ export function AdminUndanganDashboard() {
   return (
     <AdminDashboardShell
       activeSection="undangan"
-      rightAction={
-        <button
-          type="button"
-          className="btn btn-primary btn-sm"
-          onClick={() => {
-            setDialogMode("create");
-            setEditingItem(null);
-            setDialogOpen(true);
-          }}
-        >
-          Tambah Data Undangan
-        </button>
-      }
+      // rightAction={
+      //   <button
+      //     type="button"
+      //     className="btn btn-primary btn-sm"
+      //     onClick={() => {
+      //       setDialogMode("create");
+      //       setEditingItem(null);
+      //       setDialogOpen(true);
+      //     }}
+      //   >
+      //     Tambah Data Undangan
+      //   </button>
+      // }
     >
       {actionMessage ? (
         <div
@@ -200,11 +204,10 @@ export function AdminUndanganDashboard() {
               <table className="table table-sm md:table-md">
                 <thead>
                   <tr>
+                    <th>Preview</th>
                     <th>Nama File</th>
                     <th>File ID</th>
                     <th>Folder Path</th>
-                    <th>MIME Type</th>
-                    <th>Size</th>
                     <th>Uploaded</th>
                     <th>Aksi</th>
                   </tr>
@@ -213,11 +216,35 @@ export function AdminUndanganDashboard() {
                   {items.length > 0 ? (
                     items.map((item) => (
                       <tr key={item.id}>
+                        <td>
+                          {item.mimeType.startsWith("image/") ? (
+                            <button
+                              type="button"
+                              className="btn btn-ghost h-16 w-16 overflow-hidden rounded-box p-0"
+                              onClick={() =>
+                                setSelectedPreview({
+                                  id: item.id,
+                                  fileName: item.fileName,
+                                })
+                              }
+                              aria-label={`Lihat gambar ${item.fileName}`}
+                            >
+                              <img
+                                src={`/api/admin/management-undangan/${item.id}/photo`}
+                                alt={item.fileName}
+                                className="h-full w-full object-cover"
+                                loading="lazy"
+                              />
+                            </button>
+                          ) : (
+                            <span className="badge badge-ghost">
+                              Bukan gambar
+                            </span>
+                          )}
+                        </td>
                         <td className="font-semibold">{item.fileName}</td>
                         <td className="max-w-56 truncate">{item.fileId}</td>
                         <td className="max-w-64 truncate">{item.folderPath}</td>
-                        <td>{item.mimeType}</td>
-                        <td>{formatBytes(item.sizeBytes)}</td>
                         <td>{formatIdDateTime(new Date(item.uploadedAt))}</td>
                         <td>
                           <div className="flex flex-wrap gap-2">
@@ -248,7 +275,7 @@ export function AdminUndanganDashboard() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="text-center opacity-70">
+                      <td colSpan={6} className="text-center opacity-70">
                         Belum ada data management undangan.
                       </td>
                     </tr>
@@ -259,6 +286,40 @@ export function AdminUndanganDashboard() {
           ) : null}
         </div>
       </div>
+
+      {selectedPreview ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          onClick={(event) => {
+            if (event.currentTarget === event.target) {
+              setSelectedPreview(null);
+            }
+          }}
+          role="presentation"
+        >
+          <div className="w-full max-w-5xl rounded-box bg-base-100 p-3 shadow-2xl">
+            <div className="mb-3 flex items-center justify-between gap-3 px-2">
+              <p className="truncate text-sm font-medium">
+                {selectedPreview.fileName}
+              </p>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline"
+                onClick={() => setSelectedPreview(null)}
+              >
+                Tutup
+              </button>
+            </div>
+            <div className="max-h-[75vh] overflow-auto rounded-box bg-base-200 p-2">
+              <img
+                src={`/api/admin/management-undangan/${selectedPreview.id}/photo`}
+                alt={selectedPreview.fileName}
+                className="mx-auto max-h-[70vh] w-auto max-w-full rounded-box object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <AdminUndanganFormDialog
         open={dialogOpen}
@@ -288,16 +349,4 @@ function toDateTimeLocalValue(input: string): string {
   const hour = String(date.getHours()).padStart(2, "0");
   const minute = String(date.getMinutes()).padStart(2, "0");
   return `${year}-${month}-${day}T${hour}:${minute}`;
-}
-
-function formatBytes(sizeBytes: number): string {
-  if (sizeBytes < 1024) {
-    return `${sizeBytes} B`;
-  }
-
-  if (sizeBytes < 1024 * 1024) {
-    return `${(sizeBytes / 1024).toFixed(1)} KB`;
-  }
-
-  return `${(sizeBytes / (1024 * 1024)).toFixed(2)} MB`;
 }
